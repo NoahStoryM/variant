@@ -1,8 +1,15 @@
 #lang racket/base
 
-(require (for-syntax racket/base syntax/parse))
+(require (for-syntax racket/base syntax/parse)
+         racket/contract/base)
 
-(provide variant apply-variant call-with-variant let*-variant)
+(provide (contract-out
+          [variant (->* () (#:tag natural?) #:rest (listof any/c) any)]
+          [apply-variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
+          [call-with-variant (-> (-> any) procedure? any)])
+         let*-variant)
+
+(define natural? exact-nonnegative-integer?)
 
 (define (variant #:tag [tag 0] . value*)
   (if (zero? tag)

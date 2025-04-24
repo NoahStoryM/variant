@@ -14,7 +14,7 @@ a natural number.
 
 @section{Variant}
 
-@defproc[(variant [value any/c] ... [#:tag tag 0]) any]{
+@defproc[(variant [value any/c] ... [#:tag tag exact-nonnegative-integer? 0]) any]{
 Constructs tagged @racket[values]. When @racket[tag] is @racket[0] (the default),
 returns plain @racket[values].
 
@@ -25,7 +25,10 @@ returns plain @racket[values].
 ]
 }
 
-@defproc[(apply-variant [proc procedure?] [value any/c] ... [lst list?] [#:tag tag 0]) any]{
+@defproc[(apply-variant [proc procedure?]
+                        [value any/c] ... [lst list?]
+                        [#:tag tag exact-nonnegative-integer? 0])
+         any]{
 Applies @racket[proc] to @racket[(list* value ... lst)] with optional @racket[tag]
 forwarding. When @racket[tag] is @racket[0] (the default), behaves like standard
 @racket[apply].
