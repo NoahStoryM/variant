@@ -2,12 +2,17 @@
 
 (require (for-syntax racket/base syntax/parse))
 
-(provide variant call-with-variant let*-variant)
+(provide variant apply-variant call-with-variant let*-variant)
 
 (define (variant #:tag [tag 0] . value*)
   (if (zero? tag)
       (apply values value*)
       (apply values '(#:tag) (list tag) value*)))
+
+(define (apply-variant proc #:tag [tag 0] . value*)
+  (if (zero? tag)
+      (apply proc (apply list* value*))
+      (apply proc #:tag tag (apply list* value*))))
 
 (define (call-with-variant generator receiver)
   (call-with-values
