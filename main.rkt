@@ -5,7 +5,7 @@
 
 (provide (contract-out
           [variant (->* () (#:tag natural?) #:rest (listof any/c) any)]
-          [apply-variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
+          [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
           [call-with-variant (-> (-> any) procedure? any)])
          let*-variant)
 
@@ -16,7 +16,7 @@
       (apply values value*)
       (apply values '(#:tag) (list tag) value*)))
 
-(define (apply-variant proc #:tag [tag 0] . value*)
+(define (apply/variant proc #:tag [tag 0] . value*)
   (if (zero? tag)
       (apply proc (apply list* value*))
       (apply proc #:tag tag (apply list* value*))))

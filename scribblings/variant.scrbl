@@ -26,15 +26,15 @@ returns plain @racket[values].
 ]
 }
 
-@defproc[(apply-variant [proc procedure?] [value any/c] ... [lst list?] [#:tag tag natural? 0]) any]{
+@defproc[(apply/variant [proc procedure?] [value any/c] ... [lst list?] [#:tag tag natural? 0]) any]{
 Applies @racket[proc] to @racket[(list* value ... lst)] with optional @racket[tag]
 forwarding. When @racket[tag] is @racket[0] (the default), behaves like standard
 @racket[apply].
 
 @variant-examples[
-(apply-variant + 1 2 (list 3))
-(apply-variant + 1 2 (list 3) #:tag 0)
-(apply-variant
+(apply/variant + 1 2 (list 3))
+(apply/variant + 1 2 (list 3) #:tag 0)
+(apply/variant
  (λ (a b #:tag [tag 0])
    (cons (cons a b) tag))
  (list 1 2)
