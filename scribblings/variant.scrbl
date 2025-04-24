@@ -61,7 +61,7 @@ Applies @racket[receiver] to the @racket[variant] produced by @racket[generator]
 ]
 }
 
-@defform[(let*-variant ([kw-formals val-expr] ...) body ...+)]{
+@defform[(let*-variant ([kw-formals rhs-expr] ...) body ...+)]{
 Sequential @racket[variant] binding form.
 
 @variant-examples[
