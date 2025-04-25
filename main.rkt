@@ -26,10 +26,16 @@
    generator
    (case-λ
      [(kw* kw-arg* . value*)
-      (if (equal? kw* '(#:tag))
-          (if (zero? (car kw-arg*))
-              (apply receiver value*)
-              (keyword-apply receiver kw* kw-arg* value*))
+      (if (and (list? kw*) (list? kw-arg*)
+               (= (length kw*) (length kw-arg*))
+               (andmap keyword? kw*)
+               #;(apply keyword<? kw*))
+          (for/foldr ([kw* '()] [kw-arg* '()]
+                      #:result (keyword-apply receiver kw* kw-arg* value*))
+                     ([kw (in-list kw*)] [kw-arg (in-list kw-arg*)])
+            (if (and (eq? kw '#:tag) (eqv? kw-arg 0))
+                (values kw* kw-arg*)
+                (values (cons kw kw*) (cons kw-arg kw-arg*))))
           (apply receiver kw* kw-arg* value*))]
      [value* (apply receiver value*)])))
 
