@@ -52,6 +52,7 @@ A variant-aware version of @racket[apply]. Applies @racket[proc] to
 @variant-examples[
 (apply/variant + 1 2 (list 3))
 (apply/variant + 1 2 (list 3) #:tag 0)
+(eval:error (apply/variant + 1 2 (list 3) #:tag 1))
 (apply/variant
  (λ (a b #:tag [tag 0])
    (cons (cons a b) tag))
@@ -71,6 +72,10 @@ to the @tech{variant} produced by @racket[generator].
 (call-with-variant
  (λ () (variant 'a 'b #:tag 0))
  cons)
+(eval:error
+ (call-with-variant
+  (λ () (variant 'a 'b #:tag 1))
+  cons))
 (call-with-variant
  (λ () (variant 'a 'b))
  (λ (a b #:tag [tag 0]) (cons (cons a b) tag)))
