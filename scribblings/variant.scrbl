@@ -34,7 +34,7 @@ correspondence between programming constructs and set operations:
 @section{API Reference}
 
 @defproc[(variant [value any/c] ... [#:tag tag natural? 0]) any]{
-A variant-aware version of @racket[values]. Constructs @tech{tagged values}.
+A @tech{variant}-aware version of @racket[values]. Constructs @tech{tagged values}.
 When @racket[tag] is @racket[0] (default), returns plain @tech{values}.
 
 @variant-examples[
@@ -45,7 +45,7 @@ When @racket[tag] is @racket[0] (default), returns plain @tech{values}.
 }
 
 @defproc[(apply/variant [proc procedure?] [value any/c] ... [lst list?] [#:tag tag natural? 0]) any]{
-A variant-aware version of @racket[apply]. Applies @racket[proc] to
+A @tech{variant}-aware version of @racket[apply]. Applies @racket[proc] to
 @racket[(list* value ... lst)] with optional @racket[tag]. When @racket[tag] is
 @racket[0] (default), behaves like standard @racket[apply].
 
@@ -62,8 +62,8 @@ A variant-aware version of @racket[apply]. Applies @racket[proc] to
 }
 
 @defproc[(call-with-variant [generator (-> any)] [receiver procedure?]) any]{
-A variant-aware version of @racket[call-with-values]. Applies @racket[receiver]
-to the @tech{variant} produced by @racket[generator].
+A @tech{variant}-aware version of @racket[call-with-values]. Applies
+@racket[receiver] to the @tech{variant} produced by @racket[generator].
 
 @variant-examples[
 (call-with-variant
@@ -94,7 +94,7 @@ to the @tech{variant} produced by @racket[generator].
                [id default-expr]
                (code:line #:tag id)
                (code:line #:tag [id default-expr]))]]{
-A variant-aware version of @racket[let*-values]. Works with @tech{variants}.
+A @tech{variant}-aware version of @racket[let*-values]. Works with @tech{variants}.
 
 @variant-examples[
 (let*-variant ([v* (variant 1 2 3)]) v*)
