@@ -12,32 +12,33 @@
 (define natural? exact-nonnegative-integer?)
 
 (define (variant #:tag [tag 0] . value*)
-  (if (zero? tag)
+  (if (eqv? tag 0)
       (apply values value*)
       (apply values '(#:tag) (list tag) value*)))
 
 (define (apply/variant proc #:tag [tag 0] . value*)
-  (if (zero? tag)
+  (if (eqv? tag 0)
       (apply proc (apply list* value*))
       (apply proc #:tag tag (apply list* value*))))
 
 (define (call-with-variant generator receiver)
-  (call-with-values
-   generator
-   (case-λ
-     [(kw* kw-arg* . value*)
-      (if (and (list? kw*) (list? kw-arg*)
-               (= (length kw*) (length kw-arg*))
-               (andmap keyword? kw*)
-               #;(apply keyword<? kw*))
-          (for/foldr ([kw* '()] [kw-arg* '()]
-                      #:result (keyword-apply receiver kw* kw-arg* value*))
-                     ([kw (in-list kw*)] [kw-arg (in-list kw-arg*)])
-            (if (and (eq? kw '#:tag) (eqv? kw-arg 0))
-                (values kw* kw-arg*)
-                (values (cons kw kw*) (cons kw-arg kw-arg*))))
-          (apply receiver kw* kw-arg* value*))]
-     [value* (apply receiver value*)])))
+  (define receiver*
+    (case-λ
+      [(kw* kw-arg* . value*)
+       (if (and (list? kw*)
+                (andmap keyword? kw*)
+                (list? kw-arg*)
+                #;(= (length kw*) (length kw-arg*))
+                #;(apply keyword<? kw*))
+           (for/foldr ([kw* '()] [kw-arg* '()]
+                       #:result (keyword-apply receiver kw* kw-arg* value*))
+                      ([kw (in-list kw*)] [kw-arg (in-list kw-arg*)])
+             (if (and (eq? kw '#:tag) (eqv? kw-arg 0))
+                 (values kw* kw-arg*)
+                 (values (cons kw kw*) (cons kw-arg kw-arg*))))
+           (apply receiver kw* kw-arg* value*))]
+      [value* (apply receiver value*)]))
+  (call-with-values generator receiver*))
 
 (define-syntax (let*-variant stx)
   (syntax-parse stx
