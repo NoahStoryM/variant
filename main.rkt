@@ -20,33 +20,34 @@
 
 (define variant
   (make-keyword-procedure
-   (λ (kw* kw-arg* . value*)
+   (λ (kw* kw-arg* . v*)
      (let-values ([(kw* kw-arg*) (filter-keywords kw* kw-arg*)])
        (if (null? kw*)
-           (apply values value*)
-           (apply values kw* kw-arg* value*))))
+           (apply values v*)
+           (apply values kw* kw-arg* v*))))
    values))
 
 (define apply/variant
   (make-keyword-procedure
-   (λ (kw* kw-arg* proc . value*)
-     (let-values ([(value*) (apply list* value*)]
+   (λ (kw* kw-arg* proc . v*)
+     (let-values ([(v*) (apply list* v*)]
                   [(kw* kw-arg*) (filter-keywords kw* kw-arg*)])
        (if (null? kw*)
-           (apply proc value*)
-           (keyword-apply proc kw* kw-arg* value*))))
+           (apply proc v*)
+           (keyword-apply proc kw* kw-arg* v*))))
    apply))
 
 (define (call-with-variant generator receiver)
   (define receiver*
     (case-λ
-      [(kw* kw-arg* . value*)
-       (if (and (list? kw*) (list? kw-arg*) (andmap keyword? kw*)
-                #;(= (length kw*) (length kw-arg*))
+      [(kw* kw-arg* . v*)
+       (if (and (list? kw*) (list? kw-arg*)
+                (= (length kw*) (length kw-arg*))
+                (andmap keyword? kw*)
                 #;(apply keyword<? kw*))
-           (keyword-apply apply/variant kw* kw-arg* receiver value* '())
-           (apply receiver kw* kw-arg* value*))]
-      [value* (apply receiver value*)]))
+           (keyword-apply apply/variant kw* kw-arg* (list receiver v*))
+           (apply receiver kw* kw-arg* v*))]
+      [v* (apply receiver v*)]))
   (call-with-values generator receiver*))
 
 (define-syntax let*-variant

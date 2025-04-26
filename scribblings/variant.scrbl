@@ -33,7 +33,7 @@ correspondence between programming constructs and set operations:
 
 @section{API Reference}
 
-@defproc[(variant [value any/c] ... [#:<kw> kw-arg any/c] ...) any]{
+@defproc[(variant [v any/c] ... [#:<kw> kw-arg any/c] ...) any]{
 A @tech{variant}-aware version of @racket[values].
 
 @variant-examples[
@@ -46,7 +46,7 @@ A @tech{variant}-aware version of @racket[values].
 ]
 }
 
-@defproc[(apply/variant [proc procedure?] [value any/c] ... [lst list?] [#:<kw> kw-arg any/c]) any]{
+@defproc[(apply/variant [proc procedure?] [v any/c] ... [lst list?] [#:<kw> kw-arg any/c] ...) any]{
 A @tech{variant}-aware version of @racket[apply].
 
 @variant-examples[
