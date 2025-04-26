@@ -55,7 +55,7 @@ A @tech{variant}-aware version of @racket[apply]. Applies @racket[proc] to
 (eval:error (apply/variant + 1 2 (list 3) #:tag 1))
 (apply/variant
  (λ (a b #:tag [tag 0])
-   (cons (cons a b) tag))
+   (cons (vector a b) tag))
  (list 1 2)
  #:tag 1)
 ]
@@ -66,22 +66,30 @@ A @tech{variant}-aware version of @racket[call-with-values]. Applies
 @racket[receiver] to the @tech{variant} produced by @racket[generator].
 
 @variant-examples[
+(call-with-variant (λ () (variant 'a 'b)) cons)
+(call-with-variant (λ () (variant 'a 'b #:tag 0)) cons)
+(eval:error (call-with-variant (λ () (variant 'a 'b #:tag 1)) cons))
 (call-with-variant
  (λ () (variant 'a 'b))
- cons)
-(call-with-variant
- (λ () (variant 'a 'b #:tag 0))
- cons)
-(eval:error
- (call-with-variant
-  (λ () (variant 'a 'b #:tag 1))
-  cons))
-(call-with-variant
- (λ () (variant 'a 'b))
- (λ (a b #:tag [tag 0]) (cons (cons a b) tag)))
+ (λ (a b #:tag [tag 0])
+   (cons (vector a b) tag)))
 (call-with-variant
  (λ () (variant 'a 'b #:tag 1))
- (λ (a b #:tag [tag 0]) (cons (cons a b) tag)))
+ (λ (a b #:tag [tag 0])
+   (cons (vector a b) tag)))
+(call-with-variant
+ (λ () (values '(#:a #:b #:tag) '(a b 1) 1 2 3))
+ (λ (#:a a #:b b #:tag [tag 0] . v*)
+   (cons (vector a b v*) tag)))
+(call-with-variant
+ (λ () (values '(#:tag #:a #:b) '(0 a b) 1 2 3))
+ (λ (#:a a #:b b #:tag [tag 0] . v*)
+   (cons (vector a b v*) tag)))
+(eval:error
+ (call-with-variant
+  (λ () (values '(#:tag #:a #:b) '(1 a b) 1 2 3))
+  (λ (#:a a #:b b #:tag [tag 0] . v*)
+    (cons (vector a b v*) tag))))
 ]
 }
 
@@ -92,14 +100,45 @@ A @tech{variant}-aware version of @racket[call-with-values]. Applies
                       rest-id)
           (arg id
                [id default-expr]
-               (code:line #:tag id)
-               (code:line #:tag [id default-expr]))]]{
+               (code:line keyword id)
+               (code:line keyword [id default-expr]))]]{
 A @tech{variant}-aware version of @racket[let*-values]. Works with @tech{variants}.
 
 @variant-examples[
 (let*-variant ([v* (variant 1 2 3)]) v*)
 (let*-variant ([(v . v*) (variant 1 2 3)]) (cons v* v))
-(let*-variant ([(#:tag [tag 0] v . v*) (variant 1 2 3)]) (cons v* tag))
-(let*-variant ([(#:tag [tag 0] v . v*) (variant 1 2 3 #:tag 1)]) (cons v* tag))
+(let*-variant ([(v . v*) (variant 1 2 3 #:tag 0)]) (cons v* v))
+(eval:error (let*-variant ([(v . v*) (variant 1 2 3 #:tag 1)]) (cons v* v)))
+(let*-variant ([(#:tag tag v . v*)
+                (variant 1 2 3 #:tag 1)])
+  (cons (cons v* v) tag))
+(let*-variant ([(#:tag [tag 0] v . v*)
+                (variant 1 2 3)])
+  (cons (cons v* v) tag))
+(eval:error
+ (let*-variant ([(#:tag tag v . v*)
+                 (variant 1 2 3)])
+   (cons (cons v* v) tag)))
+(eval:error
+ (let*-variant ([(#:tag tag v . v*)
+                 (variant 1 2 3 #:tag 0)])
+   (cons (cons v* v) tag)))
+(let*-variant ([(#:b b #:a a . v*)
+                (values '(#:a #:b #:tag) '(x y 0) 1 2 3)])
+  (vector a b v*))
+(let*-variant ([(#:b b #:a a . v*)
+                (values '(#:tag #:a #:b) '(0 x y) 1 2 3)])
+  (vector a b v*))
+(eval:error
+ (let*-variant ([(#:b b #:a a . v*)
+                 (values '(#:tag #:a #:b) '(1 x y) 1 2 3)])
+   (vector a b v*)))
+(let*-variant ([(#:b b #:a a #:tag t . v*)
+                (values '(#:a #:b #:tag) '(x y 8) 1 2 3)])
+  (cons (vector a b v*) t))
+(eval:error
+ (let*-variant ([(#:b b #:a a #:tag t . v*)
+                 (values '(#:a #:b #:tag) '(x y 0) 1 2 3)])
+   (cons (vector a b v*) t)))
 ]
 }
