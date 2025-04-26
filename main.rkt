@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require (for-syntax racket/base syntax/parse)
+(require (for-syntax racket/base)
          racket/contract/base)
 
 (provide (contract-out
@@ -40,18 +40,15 @@
       [value* (apply receiver value*)]))
   (call-with-values generator receiver*))
 
-(define-syntax (let*-variant stx)
-  (syntax-parse stx
-    [(_ () body ...+)
-     (syntax/loc stx
-       (let () body ...))]
-    [(_ ([formals expr]) body ...+)
-     (syntax/loc stx
-       (call-with-variant
-        (lambda () expr)
-        (lambda formals body ...)))]
-    [(_ ([formals expr] [formals* expr*] ...) body ...+)
-     (syntax/loc stx
-       (let*-variant ([formals expr])
-         (let*-variant ([formals* expr*] ...))
-           body ...))]))
+(define-syntax let*-variant
+  (syntax-rules ()
+    [(_ () body body* ...)
+     (let () body body* ...)]
+    [(_ ([formals expr]) body body* ...)
+     (call-with-variant
+      (lambda () expr)
+      (lambda formals body body* ...))]
+    [(_ ([formals expr] [formals* expr*] ...) body body* ...)
+     (let*-variant ([formals expr])
+       (let*-variant ([formals* expr*] ...)
+         body body* ...))]))
