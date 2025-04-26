@@ -1,7 +1,7 @@
 #lang racket/base
 
 (require (for-syntax racket/base)
-         racket/contract/base)
+         #;racket/contract/base)
 
 (provide #;(contract-out
             [variant (->* () (#:tag natural?) #:rest (listof any/c) any)]
