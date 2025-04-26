@@ -33,21 +33,21 @@ correspondence between programming constructs and set operations:
 
 @section{API Reference}
 
-@defproc[(variant [value any/c] ... [#:tag tag natural? 0]) any]{
-A @tech{variant}-aware version of @racket[values]. Constructs @tech{tagged values}.
-When @racket[tag] is @racket[0] (default), returns plain @tech{values}.
+@defproc[(variant [value any/c] ... [#:<kw> kw-arg any/c] ...) any]{
+A @tech{variant}-aware version of @racket[values].
 
 @variant-examples[
 (variant 1 2 3)
 (variant 1 2 3 #:tag 0)
 (variant 1 2 3 #:tag 1)
+(variant 1 2 3 #:b 'y #:a 'x)
+(variant 1 2 3 #:b 'y #:a 'x #:tag 0)
+(variant 1 2 3 #:b 'y #:a 'x #:tag 1)
 ]
 }
 
-@defproc[(apply/variant [proc procedure?] [value any/c] ... [lst list?] [#:tag tag natural? 0]) any]{
-A @tech{variant}-aware version of @racket[apply]. Applies @racket[proc] to
-@racket[(list* value ... lst)] with optional @racket[tag]. When @racket[tag] is
-@racket[0] (default), behaves like standard @racket[apply].
+@defproc[(apply/variant [proc procedure?] [value any/c] ... [lst list?] [#:<kw> kw-arg any/c]) any]{
+A @tech{variant}-aware version of @racket[apply].
 
 @variant-examples[
 (apply/variant + 1 2 (list 3))
@@ -56,14 +56,16 @@ A @tech{variant}-aware version of @racket[apply]. Applies @racket[proc] to
 (apply/variant
  (λ (a b #:tag [tag 0])
    (cons (vector a b) tag))
- (list 1 2)
- #:tag 1)
+ #:tag 1 (list 1 2))
+(apply/variant
+ (λ (a #:b b #:tag [tag 0])
+   (cons (vector a b) tag))
+ #:b 2 #:tag 1 (list 1))
 ]
 }
 
 @defproc[(call-with-variant [generator (-> any)] [receiver procedure?]) any]{
-A @tech{variant}-aware version of @racket[call-with-values]. Applies
-@racket[receiver] to the @tech{variant} produced by @racket[generator].
+A @tech{variant}-aware version of @racket[call-with-values].
 
 @variant-examples[
 (call-with-variant (λ () (variant 'a 'b)) cons)
@@ -78,18 +80,9 @@ A @tech{variant}-aware version of @racket[call-with-values]. Applies
  (λ (a b #:tag [tag 0])
    (cons (vector a b) tag)))
 (call-with-variant
- (λ () (values '(#:a #:b #:tag) '(a b 1) 1 2 3))
+ (λ () (variant #:a 'a #:b 'b #:tag 1 1 2 3))
  (λ (#:a a #:b b #:tag [tag 0] . v*)
    (cons (vector a b v*) tag)))
-(call-with-variant
- (λ () (values '(#:tag #:a #:b) '(0 a b) 1 2 3))
- (λ (#:a a #:b b #:tag [tag 0] . v*)
-   (cons (vector a b v*) tag)))
-(eval:error
- (call-with-variant
-  (λ () (values '(#:tag #:a #:b) '(1 a b) 1 2 3))
-  (λ (#:a a #:b b #:tag [tag 0] . v*)
-    (cons (vector a b v*) tag))))
 ]
 }
 
@@ -100,9 +93,9 @@ A @tech{variant}-aware version of @racket[call-with-values]. Applies
                       rest-id)
           (arg id
                [id default-expr]
-               (code:line keyword id)
-               (code:line keyword [id default-expr]))]]{
-A @tech{variant}-aware version of @racket[let*-values]. Works with @tech{variants}.
+               (code:line #:<kw> id)
+               (code:line #:<kw> [id default-expr]))]]{
+A @tech{variant}-aware version of @racket[let*-values].
 
 @variant-examples[
 (let*-variant ([v* (variant 1 2 3)]) v*)
@@ -123,22 +116,11 @@ A @tech{variant}-aware version of @racket[let*-values]. Works with @tech{variant
  (let*-variant ([(#:tag tag v . v*)
                  (variant 1 2 3 #:tag 0)])
    (cons (cons v* v) tag)))
-(let*-variant ([(#:b b #:a a . v*)
-                (values '(#:a #:b #:tag) '(x y 0) 1 2 3)])
+(let*-variant ([(#:a a #:b b . v*)
+                (variant #:b 'y #:a 'x #:tag 0 1 2 3)])
   (vector a b v*))
-(let*-variant ([(#:b b #:a a . v*)
-                (values '(#:tag #:a #:b) '(0 x y) 1 2 3)])
-  (vector a b v*))
-(eval:error
- (let*-variant ([(#:b b #:a a . v*)
-                 (values '(#:tag #:a #:b) '(1 x y) 1 2 3)])
-   (vector a b v*)))
-(let*-variant ([(#:b b #:a a #:tag t . v*)
-                (values '(#:a #:b #:tag) '(x y 8) 1 2 3)])
-  (cons (vector a b v*) t))
-(eval:error
- (let*-variant ([(#:b b #:a a #:tag t . v*)
-                 (values '(#:a #:b #:tag) '(x y 0) 1 2 3)])
-   (cons (vector a b v*) t)))
+(let*-variant ([(#:b b #:a a #:tag tag . v*)
+                (variant #:b 'y #:a 'x #:tag 8 1 2 3)])
+  (cons (vector a b v*) tag))
 ]
 }
