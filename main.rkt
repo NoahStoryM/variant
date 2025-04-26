@@ -25,7 +25,7 @@
        (if (null? kw*)
            (apply values v*)
            (apply values kw* kw-arg* v*))))
-   values))
+   (procedure-rename values 'variant)))
 
 (define apply/variant
   (make-keyword-procedure
@@ -35,7 +35,7 @@
        (if (null? kw*)
            (apply proc v*)
            (keyword-apply proc kw* kw-arg* v*))))
-   apply))
+   (procedure-rename apply 'apply/variant)))
 
 (define (call-with-variant generator receiver)
   (define receiver*
