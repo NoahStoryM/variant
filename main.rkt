@@ -7,37 +7,38 @@
           [variant (->* () (#:tag natural?) #:rest (listof any/c) any)]
           [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
           [call-with-variant (-> (-> any) procedure? any)])
+         (struct-out tag)
          let*-variant)
 
 (define natural? exact-nonnegative-integer?)
 
-(define (variant #:tag [tag 0] . value*)
-  (if (eqv? tag 0)
-      (apply values value*)
-      (apply values '(#:tag) (list tag) value*)))
+(struct tag (number)
+  #:transparent
+  #:guard
+  (λ (n name)
+    (unless (natural? n)
+      (raise-argument-error name "natural?" n))
+    n))
 
-(define (apply/variant proc #:tag [tag 0] . value*)
-  (if (eqv? tag 0)
-      (apply proc (apply list* value*))
-      (apply proc #:tag tag (apply list* value*))))
+(define (variant #:tag [n 0] . v*)
+  (if (zero? n)
+      (apply values v*)
+      (apply values (tag n) v*)))
+
+(define (apply/variant proc #:tag [n 0] . v*)
+  (let ([v* (apply list* v*)])
+    (if (zero? n)
+        (apply proc v*)
+        (apply proc #:tag n v*))))
 
 (define (call-with-variant generator receiver)
   (define receiver*
     (case-λ
-      [(kw* kw-arg* . value*)
-       (if (and (list? kw*)
-                (andmap keyword? kw*)
-                (list? kw-arg*)
-                #;(= (length kw*) (length kw-arg*))
-                #;(apply keyword<? kw*))
-           (for/foldr ([kw* '()] [kw-arg* '()]
-                       #:result (keyword-apply receiver kw* kw-arg* value*))
-                      ([kw (in-list kw*)] [kw-arg (in-list kw-arg*)])
-             (if (and (eq? kw '#:tag) (eqv? kw-arg 0))
-                 (values kw* kw-arg*)
-                 (values (cons kw kw*) (cons kw-arg kw-arg*))))
-           (apply receiver kw* kw-arg* value*))]
-      [value* (apply receiver value*)]))
+      [(t . v*)
+       (if (tag? t)
+           (apply apply/variant #:tag (tag-number t) (list receiver v*))
+           (apply receiver t v*))]
+      [v* (apply receiver v*)]))
   (call-with-values generator receiver*))
 
 (define-syntax let*-variant
