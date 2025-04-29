@@ -129,7 +129,7 @@ A @tech{variant}-aware version of @racket[define-values]. Works with @tech{varia
 (let () (define-variant v* (variant 1 2 3)) v*)
 (let () (define-variant (v . v*) (variant 1 2 3)) (cons v* v))
 (let () (define-variant (v . v*) (variant 1 2 3 #:tag 0)) (cons v* v))
-(eval:error (let () (define (v . v*) (variant 1 2 3 #:tag 1)) (cons v* v)))
+(eval:error (let () (define-variant (v . v*) (variant 1 2 3 #:tag 1)) (cons v* v)))
 (let ()
   (define-variant (#:tag n v . v*)
     (variant 1 2 3 #:tag 1))
