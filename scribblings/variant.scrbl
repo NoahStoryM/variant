@@ -121,3 +121,32 @@ A @tech{variant}-aware version of @racket[let*-values]. Works with @tech{variant
    (cons (cons v* v) n)))
 ]
 }
+
+@defform[(define-variant kw-formals expr)]{
+A @tech{variant}-aware version of @racket[define-values]. Works with @tech{variants}.
+
+@variant-examples[
+(let () (define-variant v* (variant 1 2 3)) v*)
+(let () (define-variant (v . v*) (variant 1 2 3)) (cons v* v))
+(let () (define-variant (v . v*) (variant 1 2 3 #:tag 0)) (cons v* v))
+(eval:error (let () (define (v . v*) (variant 1 2 3 #:tag 1)) (cons v* v)))
+(let ()
+  (define-variant (#:tag n v . v*)
+    (variant 1 2 3 #:tag 1))
+  (cons (cons v* v) n))
+(let ()
+  (define-variant (#:tag [n 0] v . v*)
+    (variant 1 2 3))
+  (cons (cons v* v) n))
+(eval:error
+ (let ()
+   (define-variant (#:tag n v . v*)
+     (variant 1 2 3))
+   (cons (cons v* v) n)))
+(eval:error
+ (let ()
+   (define-variant (#:tag n v . v*)
+     (variant 1 2 3 #:tag 0))
+   (cons (cons v* v) n)))
+]
+}

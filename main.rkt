@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require (for-syntax racket/base)
+(require (for-syntax racket/base syntax/parse)
          racket/contract/base)
 
 (provide (contract-out
@@ -8,7 +8,8 @@
           [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
           [call-with-variant (-> (-> any) procedure? any)])
          (struct-out tag)
-         let*-variant)
+         let*-variant
+         define-variant)
 
 (define natural? exact-nonnegative-integer?)
 
@@ -41,15 +42,35 @@
       [v* (apply receiver v*)]))
   (call-with-values generator receiver*))
 
+
+(begin-for-syntax
+  (define-splicing-syntax-class arg
+    [pattern id:id #:with stx-id #'id]
+    [pattern [id:id default-expr] #:with stx-id #'id]
+    [pattern (~seq #:tag id:id) #:with stx-id #'id]
+    [pattern (~seq #:tag [id:id default-expr]) #:with stx-id #'id])
+  (define-syntax-class kw-formals
+    [pattern rest-id:id #:with stx-id* #'(rest-id)]
+    [pattern (arg:arg ...+ . rest-id:id) #:with stx-id* #'(arg.stx-id ... rest-id)]
+    [pattern (arg:arg ...) #:with stx-id* #'(arg.stx-id ...)]))
+
+
 (define-syntax let*-variant
-  (syntax-rules ()
-    [(_ () body body* ...)
-     (let () body body* ...)]
-    [(_ ([formals expr]) body body* ...)
-     (call-with-variant
-      (lambda () expr)
-      (lambda formals body body* ...))]
-    [(_ ([formals expr] [formals* expr*] ...) body body* ...)
-     (let*-variant ([formals expr])
-       (let*-variant ([formals* expr*] ...)
-         body body* ...))]))
+  (syntax-parser
+    [(_ () body ...+)
+     #'(let () body ...)]
+    [(_ ([formals:kw-formals expr]) body ...+)
+     #'(call-with-variant
+        (lambda () expr)
+        (lambda formals body ...))]
+    [(_ ([formals:kw-formals expr] [formals*:kw-formals expr*] ...) body ...+)
+     #'(let*-variant ([formals expr])
+         (let*-variant ([formals* expr*] ...)
+           body ...))]))
+
+(define-syntax define-variant
+  (syntax-parser
+    [(_ formals:kw-formals expr)
+     #'(define-values formals.stx-id*
+         (let*-variant ([formals expr])
+           (values . formals.stx-id*)))]))
