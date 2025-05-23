@@ -7,7 +7,7 @@
 (define pkg-desc "Tagged Values")
 
 (define deps '("base"))
-(define build-deps '("scribble-lib"))
+(define build-deps '("scribble-lib" "racket-doc"))
 
 (define scribblings '(("scribblings/variant.scrbl")))
 
