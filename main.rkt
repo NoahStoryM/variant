@@ -14,6 +14,7 @@
 (define natural? exact-nonnegative-integer?)
 
 (struct tag (number)
+  #:extra-constructor-name make-tag
   #:transparent
   #:guard
   (λ (n name)

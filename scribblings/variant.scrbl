@@ -33,7 +33,7 @@ correspondence between programming constructs and set operations:
 
 @section{API Reference}
 
-@defstruct*[tag ([number natural?]) #:transparent]{
+@defstruct*[tag ([number natural?]) #:transparent #:extra-constructor-name make-tag]{
 A structure type for @racket[tag]s.
 
 @variant-examples[
