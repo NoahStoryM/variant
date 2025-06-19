@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Racket
+        uses: Bogdanp/setup-racket@v1
+        with:
+          architecture: x64
+          distribution: full
+          version: stable
+
+      - name: Install dependencies
+        run: raco pkg install --auto --batch
+
+      - name: Run tests
+        run: raco test tests/variant.rkt
