@@ -3,10 +3,33 @@
 #+EMAIL: noahstorym@gmail.com
 
 * Table of Contents                                       :TOC_5_gh:noexport:
-- [[#raco-pkg-install-variant][raco pkg install variant]]
+- [[#introduction][Introduction]]
+- [[#installation][Installation]]
+- [[#usage-example][Usage Example]]
+- [[#documentation][Documentation]]
+- [[#license][License]]
 
-* raco pkg install variant
+* Introduction
+Tagged Values provides /variants/ (also called /tagged values/) as the dual
+of Racket's multiple values.  A ~variant~ carries a tag alongside the
+values, allowing functions to respond differently depending on the tag.
 
+* Installation
+Install the package with ~raco pkg install variant~.
+
+* Usage Example
 #+begin_src racket
 (require variant)
+
+(let*-variant ([(#:tag n x . xs) (variant 1 2 3 #:tag 1)])
+  (list n x xs))
 #+end_src
+The example above evaluates to ~'(1 1 (2 3))~.
+
+* Documentation
+See [[file:scribblings/variant.scrbl]] or run ~raco docs variant~ for the full
+API reference.
+
+* License
+This project is distributed under the MIT License; see [[file:LICENSE]] for
+more information.
