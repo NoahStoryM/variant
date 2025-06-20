@@ -1,19 +1,30 @@
 #lang racket/base
 
+;; This module provides a small library for working with "variants",
+;; or tagged collections of values.  A variant behaves like Racket's
+;; built-in multiple values, but optionally carries a tag that can be
+;; used to distinguish between different variants at runtime.
+
 (require (for-syntax racket/base syntax/parse)
          racket/contract/base)
 
-(provide (contract-out
-          [variant (->* () (#:tag natural?) #:rest (listof any/c) any)]
-          [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
-          [call-with-variant (-> (-> any) procedure? any)])
-         (struct-out tag)
-         let*-variant
-         define-variant)
+(provide
+  ;; Contracted functions that make up the public API
+  (contract-out
+   [variant (->* () (#:tag natural?) #:rest (listof any/c) any)]
+   [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
+   [call-with-variant (-> (-> any) procedure? any)])
+  ;; Export the tag structure type and the helper macros
+  (struct-out tag)
+  let*-variant
+  define-variant)
 
-(define natural? exact-nonnegative-integer?)
+(define natural?
+  exact-nonnegative-integer?) ; convenient alias for readability
 
 (struct tag (number)
+  ;; Represents the tag attached to a variant.  The guard enforces that
+  ;; the tag number is a natural number at construction time.
   #:extra-constructor-name make-tag
   #:transparent
   #:guard
@@ -23,17 +34,27 @@
     n))
 
 (define (variant #:tag [n 0] . v*)
+  ;; Construct a tagged collection of values.  When the tag is zero
+  ;; (the default) this behaves just like plain `values`; otherwise a
+  ;; `tag` structure is inserted as the first value.
   (if (zero? n)
       (apply values v*)
       (apply values (tag n) v*)))
 
 (define (apply/variant proc #:tag [n 0] . v*)
+  ;; Like `apply` but understands the optional `#:tag` argument.  If the
+  ;; tag is zero the procedure is applied normally.  Otherwise the tag is
+  ;; inserted before the rest arguments when calling the procedure.
   (let ([v* (apply list* v*)])
     (if (zero? n)
         (apply proc v*)
         (apply proc #:tag n v*))))
 
 (define (call-with-variant generator receiver)
+  ;; Variant-aware analogue of `call-with-values`.  The generator
+  ;; produces a variant which is then passed to `receiver`.  If the
+  ;; values are tagged, `receiver` is called using `apply/variant` so
+  ;; that it can accept a matching `#:tag` argument.
   (define receiver*
     (case-λ
       [(t . v*)
@@ -45,18 +66,25 @@
 
 
 (begin-for-syntax
+  ;; Syntax classes used by the macro definitions below.  They parse the
+  ;; keyword-formal lists that allow optional `#:tag` arguments.
   (define-splicing-syntax-class arg
     [pattern id:id #:with stx-id #'id]
     [pattern [id:id default-expr] #:with stx-id #'id]
     [pattern (~seq #:tag id:id) #:with stx-id #'id]
     [pattern (~seq #:tag [id:id default-expr]) #:with stx-id #'id])
   (define-syntax-class kw-formals
+    ;; Collects the identifiers from a formal list so that the macros can
+    ;; produce the corresponding variable bindings.
     [pattern rest-id:id #:with stx-id* #'(rest-id)]
     [pattern (arg:arg ...+ . rest-id:id) #:with stx-id* #'(arg.stx-id ... rest-id)]
     [pattern (arg:arg ...) #:with stx-id* #'(arg.stx-id ...)]))
 
 
 (define-syntax let*-variant
+  ;; A `let*-values` analogue that works with variants.  Each bound
+  ;; expression may produce tagged or untagged values and the
+  ;; corresponding formals can include an optional `#:tag` binding.
   (syntax-parser
     [(_ () body ...+)
      #'(let () body ...)]
@@ -70,6 +98,9 @@
            body ...))]))
 
 (define-syntax define-variant
+  ;; Helper for defining variant-aware bindings.  Expands to
+  ;; `let*-variant` wrapped in `define-values` so that the identifiers in
+  ;; `formals` become top-level definitions.
   (syntax-parser
     [(_ formals:kw-formals expr)
      #'(define-values formals.stx-id*
