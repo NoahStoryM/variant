@@ -42,9 +42,10 @@
       (apply values (tag n) v*)))
 
 (define (apply/variant proc #:tag [n 0] . v*)
-  ;; Like `apply` but understands the optional `#:tag` argument.  If the
-  ;; tag is zero the procedure is applied normally.  Otherwise the tag is
-  ;; inserted before the rest arguments when calling the procedure.
+  ;; Like `apply` but optionally passes `#:tag` to @racket[proc] as a
+  ;; regular keyword argument. When @racket[n] is @racket[0] the keyword
+  ;; is omitted; otherwise @racket[proc] should accept @racket[#:tag] and
+  ;; the tag value is provided before the rest arguments.
   (let ([v* (apply list* v*)])
     (if (zero? n)
         (apply proc v*)
