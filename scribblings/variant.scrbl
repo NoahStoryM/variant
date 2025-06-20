@@ -55,8 +55,9 @@ When @racket[n] is @racket[0] (default), returns plain @tech{values}.
 }
 
 @defproc[(apply/variant [proc procedure?] [v any/c] ... [lst list?] [#:tag n natural? 0]) any]{
-A @tech{variant}-aware version of @racket[apply]. Applies @racket[proc] to
-@racket[(list* v ... lst)] with a @racket[tag] @racket[n].
+A @tech{variant}-aware version of @racket[apply]. It calls @racket[proc] on
+@racket[(list* v ... lst)], passing @racket[#:tag n] as a normal keyword
+argument when @racket[n] is non-zero.
 
 @variant-examples[
 (apply/variant + 1 2 (list 3))

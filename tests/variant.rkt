@@ -1,11 +1,15 @@
 #lang racket/base
 
+;; Unit tests for the variant library.
+
 (require rackunit)
 (require "../main.rkt")
 
 (displayln "Test `variant.rkt'")
 
 (define-syntax-rule (check-variant= e1 e2)
+  ;; Helper macro that compares two variant expressions by expanding
+  ;; them with `let*-variant` and comparing both the values and the tag.
   (check-equal?
    (let*-variant ([(#:tag [n 0] . v1) e1]) (cons v1 n))
    (let*-variant ([(#:tag [n 0] . v2) e2]) (cons v2 n))))
