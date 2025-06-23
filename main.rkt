@@ -57,11 +57,11 @@
   ;; that it can accept a matching `#:tag` argument.
   (define receiver*
     (case-λ
+      [() (receiver)]
       [(t . v*)
        (if (tag? t)
-           (apply apply/variant #:tag (tag-number t) (list receiver v*))
-           (apply receiver t v*))]
-      [v* (apply receiver v*)]))
+           (apply/variant receiver #:tag (tag-number t) v*)
+           (apply receiver t v*))]))
   (call-with-values generator receiver*))
 
 
@@ -90,8 +90,8 @@
      #'(let () body ...)]
     [(_ ([formals:kw-formals expr]) body ...+)
      #'(call-with-variant
-        (lambda () expr)
-        (lambda formals body ...))]
+        (λ () expr)
+        (λ formals body ...))]
     [(_ ([formals:kw-formals expr] [formals*:kw-formals expr*] ...) body ...+)
      #'(let*-variant ([formals expr])
          (let*-variant ([formals* expr*] ...)
