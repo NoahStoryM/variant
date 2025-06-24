@@ -90,7 +90,7 @@ A @tech{variant}-aware version of @racket[call-with-values]. Applies
 ]
 }
 
-@defproc[(compose/variant [proc procedure?] ...*) procedure?]{
+@defproc[(compose/variant [proc procedure?] ...) procedure?]{
 A @tech{variant}-aware version of @racket[compose]. Composes procedures
 with @racket[call-with-variant] so that tags are forwarded between them.
 The rightmost procedure is applied first.
