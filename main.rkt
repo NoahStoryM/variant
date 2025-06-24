@@ -67,8 +67,8 @@
 
 (define (compose2/variant g f)
   (cond
-    [(equal? f variant) g]
-    [(equal? g variant) f]
+    [(eq? f variant) g]
+    [(eq? g variant) f]
     [else
      (define (composed #:tag [n 0] . a*)
        (call-with-variant (λ () (apply/variant f #:tag n a*)) g))
