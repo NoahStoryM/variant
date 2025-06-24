@@ -13,7 +13,8 @@
   (contract-out
    [variant (->* () (#:tag natural?) #:rest (listof any/c) any)]
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
-   [call-with-variant (-> (-> any) procedure? any)])
+   [call-with-variant (-> (-> any) procedure? any)]
+   [compose/variant (->* () () #:rest (listof procedure?) procedure?)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -63,6 +64,19 @@
            (apply/variant receiver #:tag (tag-number t) v*)
            (apply receiver t v*))]))
   (call-with-values generator receiver*))
+
+(define (compose2/variant g f)
+  (cond
+    [(equal? f variant) g]
+    [(equal? g variant) f]
+    [else
+     (define (composed #:tag [n 0] . a*)
+       (call-with-variant (λ () (apply/variant f #:tag n a*)) g))
+     composed]))
+
+(define (compose/variant . fs)
+  (for/fold ([acc variant]) ([f (in-list fs)])
+    (compose2/variant acc f)))
 
 
 (begin-for-syntax

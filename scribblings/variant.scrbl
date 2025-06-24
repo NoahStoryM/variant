@@ -90,6 +90,24 @@ A @tech{variant}-aware version of @racket[call-with-values]. Applies
 ]
 }
 
+@defproc[(compose/variant [proc procedure?] ...*) procedure?]{
+A @tech{variant}-aware version of @racket[compose]. Composes procedures
+with @racket[call-with-variant] so that tags are forwarded between them.
+The rightmost procedure is applied first.
+
+Calling @racket[(compose/variant)] returns @racket[variant], which acts
+as the identity element, so @racket[(compose/variant variant f variant)]
+simply yields @racket[f].
+
+@variant-examples[
+(define add1-tag (λ (x) (variant (add1 x) #:tag 1)))
+(define unwrap (λ (#:tag [n 0] x) (cons x n)))
+((compose/variant unwrap add1-tag) 3)
+(compose/variant add1-tag variant)
+(compose/variant variant add1-tag)
+]
+}
+
 @defform[(let*-variant ([kw-formals rhs-expr] ...) body ...+)
          #:grammar
          [(kw-formals (arg ...)
