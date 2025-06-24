@@ -74,8 +74,9 @@
        (call-with-variant (λ () (apply/variant f #:tag n a*)) g))
      composed]))
 
-(define (compose/variant . fs)
-  (for/fold ([acc variant]) ([f (in-list fs)])
+(define (compose/variant . f*)
+  (for/fold ([acc variant])
+            ([f (in-list f*)])
     (compose2/variant acc f)))
 
 

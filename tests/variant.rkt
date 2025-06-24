@@ -44,6 +44,33 @@
   (check-exn exn:fail:contract?
              (λ () (call-with-variant (λ () (variant 'a 'b #:tag 1)) cons))))
 
+(test-case "Test `compose/variant'"
+  (define (add1-tag x) (variant (add1 x) #:tag 1))
+  (define (unwrap #:tag [n 0] x) (cons x n))
+  (check-variant=
+   ((compose/variant) #:tag 2 1 2)
+   (variant 1 2 #:tag 2))
+  (check-variant=
+   ((compose/variant add1-tag values) 3)
+   (variant 4 #:tag 1))
+  (check-equal?
+   ((compose/variant unwrap add1-tag) 3)
+   '(4 . 1))
+  (define (inc #:tag [n 0] x) (variant (add1 x) #:tag n))
+  (define (pair #:tag [n 0] x) (cons x n))
+  (check-equal?
+   ((compose/variant pair inc) #:tag 5 1)
+   '(2 . 5))
+  (check-variant=
+   ((compose/variant add1-tag variant) 10)
+   (add1-tag 10))
+  (check-variant=
+   ((compose/variant variant add1-tag) 10)
+   (add1-tag 10))
+  (check-variant=
+   ((compose/variant variant add1-tag variant) 10)
+   (add1-tag 10)))
+
 (test-case "Test `let*-variant'"
   (check-equal? (let*-variant ([v* (variant 1 2 3)]) v*) '(1 2 3))
   (check-equal? (let*-variant ([(v . v*) (variant 1 2 3)]) (cons v* v))
@@ -87,31 +114,3 @@
              (λ ()
                (define-variant (#:tag n v . v*) (variant 1 2 3 #:tag 0))
                (cons (cons v* v) n))))
-
-(test-case "Test `compose/variant'"
-  (define (add1-tag x) (variant (add1 x) #:tag 1))
-  (define (unwrap #:tag [n 0] x) (cons x n))
-  (check-variant=
-   ((compose/variant) #:tag 2 1 2)
-   (variant 1 2 #:tag 2))
-  (check-variant=
-   ((compose/variant add1-tag values) 3)
-   (variant 4 #:tag 1))
-  (check-equal?
-   ((compose/variant unwrap add1-tag) 3)
-   '(4 . 1))
-  (define (inc #:tag [n 0] x) (variant (add1 x) #:tag n))
-  (define (pair #:tag [n 0] x) (cons x n))
-  (check-equal?
-   ((compose/variant pair inc) #:tag 5 1)
-   '(2 . 5))
-  (check-variant=
-   ((compose/variant add1-tag variant) 10)
-   (add1-tag 10))
-  (check-variant=
-   ((compose/variant variant add1-tag) 10)
-   (add1-tag 10))
-  (check-variant=
-   ((compose/variant variant add1-tag variant) 10)
-   (add1-tag 10)))
-
