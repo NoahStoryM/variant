@@ -11,9 +11,9 @@
 (provide
   ;; Contracted functions that make up the public API
   (contract-out
-   [variant (->* () (#:tag natural?) #:rest (listof any/c) any)]
+   [variant procedure?]
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
-   [call-with-variant (-> (-> any) procedure? any)]
+   [call-with-variant (-> procedure? procedure? any)]
    [compose/variant (->* () () #:rest (listof procedure?) procedure?)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
