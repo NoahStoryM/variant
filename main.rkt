@@ -14,7 +14,8 @@
    [variant procedure?]
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
-   [compose/variant (->* () () #:rest (listof procedure?) procedure?)])
+   [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
+   [distributivity procedure?])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -78,6 +79,50 @@
   (for/fold ([acc variant])
             ([f (in-list f*)])
     (compose2/variant acc f)))
+
+;; Distribute nested sums over products according to `shape`.
+;; `shape` is a vector of natural numbers describing the number of
+;; options for each argument.  Each argument may optionally start with a
+;; `tag` structure indicating which option was chosen.  The result is a
+;; single variant tagged with the combined index.
+(define (distributivity #:shape shape . args)
+  (unless (vector? shape)
+    (raise-argument-error 'distributivity "vector?" shape))
+  (define dims (vector->list shape))
+  (define idxs '())
+  (define vals '())
+  (define rest-args args)
+  (for ([n dims])
+    (define idx (if (and (pair? rest-args) (tag? (car rest-args)))
+                    (let ([t (tag-number (car rest-args))])
+                      (set! rest-args (cdr rest-args))
+                      t)
+                    0))
+    (unless (< idx n)
+      (raise-argument-error 'distributivity
+                            (format "tag < ~a" n) idx))
+    (unless (pair? rest-args)
+      (raise-arity-error 'distributivity (length dims)))
+    (set! vals (cons (car rest-args) vals))
+    (set! rest-args (cdr rest-args))
+    (set! idxs (cons idx idxs)))
+  (when (pair? rest-args)
+    (raise-arity-error 'distributivity (length args)))
+  (set! vals (reverse vals))
+  (set! idxs (reverse idxs))
+  ;; compute combined tag using column-major enumeration
+  (define tag-num
+    (let loop ([idxs idxs] [sizes dims] [stride 1] [acc 0])
+      (cond
+        [(null? idxs) acc]
+        [else
+         (loop (cdr idxs)
+               (cdr sizes)
+               (* stride (car sizes))
+               (+ acc (* (car idxs) stride)))])))
+  (if (zero? tag-num)
+      (apply values vals)
+      (apply variant #:tag tag-num vals)))
 
 
 (begin-for-syntax
