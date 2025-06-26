@@ -88,12 +88,11 @@
   ;; single variant tagged with the combined index.
   (unless (vector? shape)
     (raise-argument-error 'distributivity "vector?" shape))
-  (define dims (vector->list shape))
-  (define len (length dims))
+  (define len (vector-length shape))
   (define-values (idxs vals remaining)
     (for/fold ([idxs '()] [vals '()] [rest args]
                #:result (values (reverse idxs) (reverse vals) rest))
-              ([n (in-list dims)])
+              ([n (in-vector shape)])
       (define idx (if (and (pair? rest) (tag? (car rest)))
                       (tag-number (car rest))
                       0))
@@ -111,7 +110,7 @@
   ;; compute combined tag using column-major enumeration
   (define tag-num
     (for/fold ([acc 0] [stride 1] #:result acc)
-              ([idx (in-list idxs)] [size (in-list dims)])
+              ([idx (in-list idxs)] [size (in-vector shape)])
       (values (+ acc (* idx stride))
               (* stride size))))
   (if (zero? tag-num)
