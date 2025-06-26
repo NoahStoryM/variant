@@ -113,10 +113,9 @@
               ([idx (in-list idx*)] [size (in-vector shape)])
       (values (+ acc (* idx stride))
               (* stride size))))
-  (if (zero? tag-num)
-      (apply values v*)
-      (apply variant #:tag tag-num v*)))
+  (apply variant #:tag tag-num v*)
 
+)
 
 (begin-for-syntax
   ;; Syntax classes used by the macro definitions below.  They parse the
