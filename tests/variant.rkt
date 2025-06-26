@@ -110,7 +110,7 @@
              (λ ()
                (define-variant (#:tag n v . v*) (variant 1 2 3))
                (cons (cons v* v) n)))
-(check-exn exn:fail:contract?
+  (check-exn exn:fail:contract?
              (λ ()
                (define-variant (#:tag n v . v*) (variant 1 2 3 #:tag 0))
                (cons (cons v* v) n))))

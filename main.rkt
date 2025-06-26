@@ -80,12 +80,12 @@
             ([f (in-list f*)])
     (compose2/variant acc f)))
 
-;; Distribute nested sums over products according to `shape`.
-;; `shape` is a vector of natural numbers describing the number of
-;; options for each argument.  Each argument may optionally start with a
-;; `tag` structure indicating which option was chosen.  The result is a
-;; single variant tagged with the combined index.
 (define (distributivity #:shape shape . args)
+  ;; Distribute nested sums over products according to `shape`.
+  ;; `shape` is a vector of natural numbers describing the number of
+  ;; options for each argument.  Each argument may optionally start with a
+  ;; `tag` structure indicating which option was chosen.  The result is a
+  ;; single variant tagged with the combined index.
   (unless (vector? shape)
     (raise-argument-error 'distributivity "vector?" shape))
   (define dims (vector->list shape))
