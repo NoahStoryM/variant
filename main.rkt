@@ -110,14 +110,12 @@
   (define vals (reverse rev-vals))
   ;; compute combined tag using column-major enumeration
   (define tag-num
-    (let loop ([idxs idxs] [sizes dims] [stride 1] [acc 0])
-      (cond
-        [(null? idxs) acc]
-        [else
-         (loop (cdr idxs)
-               (cdr sizes)
-               (* stride (car sizes))
-               (+ acc (* (car idxs) stride)))])))
+    (let-values ([(acc stride)
+                  (for/fold ([acc 0] [stride 1])
+                            ([idx (in-list idxs)] [size (in-list dims)])
+                    (values (+ acc (* idx stride))
+                            (* stride size)))])
+      acc))
   (if (zero? tag-num)
       (apply values vals)
       (apply variant #:tag tag-num vals)))
