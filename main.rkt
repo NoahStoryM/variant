@@ -80,7 +80,7 @@
             ([f (in-list f*)])
     (compose2/variant acc f)))
 
-(define (distributivity #:shape shape . args)
+(define (distributivity #:shape shape . arg*)
   ;; Distribute nested sums over products according to `shape`.
   ;; `shape` is a vector of natural numbers describing the number of
   ;; options for each argument.  Each argument may optionally start with a
@@ -89,33 +89,33 @@
   (unless (vector? shape)
     (raise-argument-error 'distributivity "vector?" shape))
   (define len (vector-length shape))
-  (define-values (idxs vals remaining)
-    (for/fold ([idxs '()] [vals '()] [rest args]
-               #:result (values (reverse idxs) (reverse vals) rest))
+  (define-values (idx* v* remaining*)
+    (for/fold ([idx* '()] [v* '()] [rest* arg*]
+               #:result (values (reverse idx*) (reverse v*) rest*))
               ([n (in-vector shape)])
-      (define idx (if (and (pair? rest) (tag? (car rest)))
-                      (tag-number (car rest))
+      (define idx (if (and (pair? rest*) (tag? (car rest*)))
+                      (tag-number (car rest*))
                       0))
-      (define rest^ (if (and (pair? rest) (tag? (car rest))) (cdr rest) rest))
+      (define rest*tag (if (and (pair? rest*) (tag? (car rest*))) (cdr rest*) rest*))
       (unless (< idx n)
         (raise-argument-error 'distributivity
                               (format "tag < ~a" n) idx))
-      (unless (pair? rest^)
+      (unless (pair? rest*tag)
         (raise-arity-error 'distributivity len))
-      (values (cons idx idxs)
-              (cons (car rest^) vals)
-              (cdr rest^))))
-  (when (pair? remaining)
+      (values (cons idx idx*)
+              (cons (car rest*tag) v*)
+              (cdr rest*tag))))
+  (when (pair? remaining*)
     (raise-arity-error 'distributivity len))
   ;; compute combined tag using column-major enumeration
   (define tag-num
     (for/fold ([acc 0] [stride 1] #:result acc)
-              ([idx (in-list idxs)] [size (in-vector shape)])
+              ([idx (in-list idx*)] [size (in-vector shape)])
       (values (+ acc (* idx stride))
               (* stride size))))
   (if (zero? tag-num)
-      (apply values vals)
-      (apply variant #:tag tag-num vals)))
+      (apply values v*)
+      (apply variant #:tag tag-num v*)))
 
 
 (begin-for-syntax
