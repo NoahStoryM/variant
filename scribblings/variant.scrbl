@@ -169,3 +169,16 @@ A @tech{variant}-aware version of @racket[define-values]. Works with @tech{varia
    (cons (cons v* v) n)))
 ]
 }
+@defproc[(distributivity [#:shape shape vector?] v any/c ...) any]{
+Distributes nested sums over products according to @racket[shape].
+Each argument may optionally start with a @racket[tag] indicating
+which option was chosen. The resulting variant is tagged with the
+combined index in column-major order.
+
+@variant-examples[
+(distributivity #:shape #(1) 'a)
+(distributivity #:shape #(2) (tag 1) 'b)
+(distributivity #:shape #(1 2) 'a (tag 1) 'c)
+]
+}
+
