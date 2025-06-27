@@ -87,31 +87,32 @@
   ;; `tag` structure indicating which option was chosen.  The result is a
   ;; single variant tagged with the combined index.
   (define len (vector-length shape))
-  (define-values (idx* v* remaining*)
-    (for/fold ([idx* '()] [v* '()] [rest* arg*]
-               #:result (values (reverse idx*) (reverse v*) rest*))
-              ([n (in-vector shape)])
-      (define idx (if (and (pair? rest*) (tag? (car rest*)))
-                      (tag-number (car rest*))
-                      0))
-      (define rest*tag (if (and (pair? rest*) (tag? (car rest*))) (cdr rest*) rest*))
-      (unless (< idx n)
-        (raise-argument-error 'distributivity
-                              (format "tag < ~a" n) idx))
-      (unless (pair? rest*tag)
-        (raise-arity-error 'distributivity len))
-      (values (cons idx idx*)
-              (cons (car rest*tag) v*)
-              (cdr rest*tag))))
-  (when (pair? remaining*)
-    (raise-arity-error 'distributivity len))
+  (define-values (idx* res*)
+    (for/fold ([idx* '()] [res* '()] [arg* arg*]
+               #:result
+               (if (pair? arg*)
+                   (raise-arity-error 'distributivity len)
+                   (values (reverse idx*) (reverse res*))))
+              ([size (in-vector shape)])
+      (let-values ([(idx arg*)
+                    (if (and (pair? arg*) (tag? (car arg*)))
+                        (values (tag-number (car arg*)) (cdr arg*))
+                        (values 0 arg*))])
+        (unless (< idx size)
+          (raise-argument-error 'distributivity (format "tag < ~a" size) idx))
+        (unless (pair? arg*)
+          (raise-arity-error 'distributivity len))
+        (values (cons idx idx*)
+                (cons (car arg*) res*)
+                (cdr arg*)))))
   ;; compute combined tag using column-major enumeration
   (define tag-num
     (for/fold ([acc 0] [stride 1] #:result acc)
-              ([idx (in-list idx*)] [size (in-vector shape)])
+              ([idx (in-list idx*)]
+               [size (in-vector shape)])
       (values (+ acc (* idx stride))
               (* stride size))))
-  (apply variant #:tag tag-num v*)
+  (apply variant #:tag tag-num res*)
 
 )
 

@@ -177,8 +177,7 @@
    (variant #:tag 2 'a 'd))
 
   ;; (a + b) × c
-  ;; ≅ a × c
-  ;; + b × c
+  ;; ≅ a × c + b × c
   (check-variant=
    (distributivity #:shape #(2 1) 'a 'c)
    (values 'a 'c))
@@ -230,9 +229,7 @@
    (variant #:tag 5 'b 'e))
 
   ;; (a + b + c) × d
-  ;; ≅ a × d
-  ;; + b × d
-  ;; + c × d
+  ;; ≅ a × d + b × d + c × d
   (check-variant=
    (distributivity #:shape #(3 1) 'a 'd)
    (values 'a 'd))
@@ -244,12 +241,8 @@
    (variant #:tag 2 'c 'd))
 
   ;; (a + b + c) × (d + e)
-  ;; ≅ a × d
-  ;; + b × d
-  ;; + c × d
-  ;; + a × e
-  ;; + b × e
-  ;; + c × e
+  ;; ≅ a × d + b × d + c × d
+  ;; + a × e + b × e + c × e
   (check-variant=
    (distributivity #:shape #(3 2) 'a 'd)
    (values 'a 'd))
@@ -270,15 +263,9 @@
    (variant #:tag 5 'c 'e))
 
   ;; (a + b + c) × (d + e + f)
-  ;; ≅ a × d
-  ;; + b × d
-  ;; + c × d
-  ;; + a × e
-  ;; + b × e
-  ;; + c × e
-  ;; + a × f
-  ;; + b × f
-  ;; + c × f
+  ;; ≅ a × d + b × d + c × d
+  ;; + a × e + b × e + c × e
+  ;; + a × f + b × f + c × f
   (check-variant=
    (distributivity #:shape #(3 3) 'a 'd)
    (values 'a 'd))
