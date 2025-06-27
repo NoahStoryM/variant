@@ -54,6 +54,16 @@ When @racket[n] is @racket[0] (default), returns plain @tech{values}.
 ]
 }
 
+@defproc[(inclusion [n natural?]) procedure?]{
+Adds @racket[n] to the incoming tag and returns a @tech{tagged values}.
+
+@variant-examples[
+((inclusion 0) 1 2 3)
+((inclusion 1) 1 2 3)
+((inclusion 1) 1 2 3 #:tag 1)
+]
+}
+
 @defproc[(apply/variant [proc procedure?] [v any/c] ... [lst list?] [#:tag n natural? 0]) any]{
 A @tech{variant}-aware version of @racket[apply]. It calls @racket[proc] on
 @racket[(list* v ... lst)], passing @racket[#:tag n] as a normal keyword

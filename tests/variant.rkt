@@ -27,6 +27,18 @@
   (check-variant= (variant 1 2 3 #:tag 0) (values (tag 0) 1 2 3))
   (check-variant= (variant 1 2 3 #:tag 1) (values (tag 1) 1 2 3)))
 
+(test-case "Test `inclusion'"
+  (for* ([i (in-range 5)]
+         [n (in-range 10)])
+    (check-equal?
+     (call-with-values
+      (λ ()
+        (call-with-variant
+         (λ () (variant 1 2 3 #:tag i))
+         (inclusion n)))
+      list)
+     (list (tag (+ i n)) 1 2 3))))
+
 (test-case "Test `apply/variant'"
   (check-eqv? (apply/variant + 1 2 (list 3)) 6)
   (check-eqv? (apply/variant + 1 2 (list 3) #:tag 0) 6)

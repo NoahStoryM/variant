@@ -12,6 +12,7 @@
   ;; Contracted functions that make up the public API
   (contract-out
    [variant procedure?]
+   [inclusion (-> integer? (->* () (#:tag natural?) #:rest (listof any/c) any))]
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
    [compose/variant (->* () () #:rest (listof procedure?) procedure?)])
@@ -41,6 +42,12 @@
   (if (zero? n)
       (apply values v*)
       (apply values (tag n) v*)))
+
+(define ((inclusion m) #:tag [n 0] . v*)
+  ;; Additive inclusion for tags.  The returned procedure forwards
+  ;; its incoming tag (defaulting to 0) and adds `n` to it, always
+  ;; producing an explicitly tagged variant.
+  (apply values (tag (+ m n)) v*))
 
 (define (apply/variant proc #:tag [n 0] . v*)
   ;; Like `apply`, but optionally forwards the `#:tag` keyword to
