@@ -27,6 +27,18 @@
   (check-variant= (variant 1 2 3 #:tag 0) (values (tag 0) 1 2 3))
   (check-variant= (variant 1 2 3 #:tag 1) (values (tag 1) 1 2 3)))
 
+(test-case "Test `inclusion'"
+  (for* ([i (in-range 5)]
+         [n (in-range 10)])
+    (check-equal?
+     (call-with-values
+      (λ ()
+        (call-with-variant
+         (λ () (variant 1 2 3 #:tag i))
+         (inclusion n)))
+      list)
+     (list (tag (+ i n)) 1 2 3))))
+
 (test-case "Test `apply/variant'"
   (check-eqv? (apply/variant + 1 2 (list 3)) 6)
   (check-eqv? (apply/variant + 1 2 (list 3) #:tag 0) 6)
@@ -47,6 +59,7 @@
 (test-case "Test `compose/variant'"
   (define (add1-tag x) (variant (add1 x) #:tag 1))
   (define (unwrap #:tag [n 0] x) (cons x n))
+  (check-equal? (compose/variant) variant)
   (check-variant=
    ((compose/variant) #:tag 2 1 2)
    (variant 1 2 #:tag 2))
