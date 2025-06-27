@@ -6,7 +6,8 @@
 ;; used to distinguish between different variants at runtime.
 
 (require (for-syntax racket/base syntax/parse)
-         racket/contract/base)
+         racket/contract/base
+         racket/list)
 
 (provide
   ;; Contracted functions that make up the public API
@@ -86,9 +87,6 @@
   (for/fold ([acc variant])
             ([f (in-list f*)])
     (compose2/variant acc f)))
-
-;; utilities
-(require racket/list)
 
 (define (distributivity #:shape shape . arg*)
   ;; Distribute nested sums over products according to `shape`.
