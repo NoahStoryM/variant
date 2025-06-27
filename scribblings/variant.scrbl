@@ -108,6 +108,17 @@ simply yields @racket[f].
 ]
 }
 
+@defproc[(inclusion [n natural?]) procedure?]{
+Adds @racket[n] to the incoming tag and returns a variant with the
+same values.
+
+@variant-examples[
+(call-with-variant
+ (λ () (variant 1 2 3 #:tag 1))
+ (inclusion 2))
+]
+}
+
 @defform[(let*-variant ([kw-formals rhs-expr] ...) body ...+)
          #:grammar
          [(kw-formals (arg ...)

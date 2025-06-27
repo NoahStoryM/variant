@@ -14,7 +14,8 @@
    [variant procedure?]
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
-   [compose/variant (->* () () #:rest (listof procedure?) procedure?)])
+   [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
+   [inclusion (-> natural? (->* () (#:tag natural?) #:rest (listof any/c) any))])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -78,6 +79,12 @@
   (for/fold ([acc variant])
             ([f (in-list f*)])
     (compose2/variant acc f)))
+
+;; Additive inclusion for tags.  The returned procedure forwards its
+;; incoming tag (defaulting to @racket[0]) and adds @racket[n] to it,
+;; always producing an explicitly tagged variant.
+(define ((inclusion n) #:tag [m 0] . v*)
+  (apply values (tag (+ n m)) v*))
 
 
 (begin-for-syntax
