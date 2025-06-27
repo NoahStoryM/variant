@@ -112,9 +112,7 @@
                [size (in-vector shape)])
       (values (+ acc (* idx stride))
               (* stride size))))
-  (apply variant #:tag tag-num res*)
-
-)
+  (apply variant #:tag tag-num res*))
 
 (begin-for-syntax
   ;; Syntax classes used by the macro definitions below.  They parse the
