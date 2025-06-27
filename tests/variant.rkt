@@ -84,50 +84,6 @@
    ((compose/variant variant add1-tag variant) 10)
    (add1-tag 10)))
 
-(test-case "Test `let*-variant'"
-  (check-equal? (let*-variant ([v* (variant 1 2 3)]) v*) '(1 2 3))
-  (check-equal? (let*-variant ([(v . v*) (variant 1 2 3)]) (cons v* v))
-                (let*-variant ([(v . v*) (variant 1 2 3 #:tag 0)]) (cons v* v)))
-  (check-exn exn:fail:contract?
-             (λ () (let*-variant ([(v . v*) (variant 1 2 3 #:tag 1)]) (cons v* v))))
-  (check-equal? (let*-variant ([(#:tag n v . v*)
-                                (variant 1 2 3 #:tag 1)])
-                              (cons (cons v* v) n))
-                '(((2 3) . 1) . 1))
-  (check-equal? (let*-variant ([(#:tag [n 0] v . v*)
-                                (variant 1 2 3)])
-                              (cons (cons v* v) n))
-                '(((2 3) . 1) . 0))
-  (check-exn exn:fail:contract?
-             (λ () (let*-variant ([(#:tag n v . v*) (variant 1 2 3)]) (cons (cons v* v) n))))
-  (check-exn exn:fail:contract?
-             (λ () (let*-variant ([(#:tag n v . v*) (variant 1 2 3 #:tag 0)]) (cons (cons v* v) n)))))
-
-(test-case "Test `define-variant'"
-  (check-equal? (let () (define-variant v* (variant 1 2 3)) v*) '(1 2 3))
-  (check-equal? (let () (define-variant (v . v*) (variant 1 2 3)) (cons v* v))
-                (let () (define-variant (v . v*) (variant 1 2 3 #:tag 0)) (cons v* v)))
-  (check-exn exn:fail:contract?
-             (λ ()
-               (define-variant (v . v*) (variant 1 2 3 #:tag 1))
-               (cons v* v)))
-  (check-equal? (let ()
-                  (define-variant (#:tag n v . v*) (variant 1 2 3 #:tag 1))
-                  (cons (cons v* v) n))
-                '(((2 3) . 1) . 1))
-  (check-equal? (let ()
-                  (define-variant (#:tag [n 0] v . v*) (variant 1 2 3))
-                  (cons (cons v* v) n))
-                '(((2 3) . 1) . 0))
-  (check-exn exn:fail:contract?
-             (λ ()
-               (define-variant (#:tag n v . v*) (variant 1 2 3))
-               (cons (cons v* v) n)))
-  (check-exn exn:fail:contract?
-             (λ ()
-               (define-variant (#:tag n v . v*) (variant 1 2 3 #:tag 0))
-               (cons (cons v* v) n))))
-
 (test-case "Test `distributivity'"
   ;; a
   (check-variant=
@@ -306,3 +262,48 @@
   (check-variant=
    (distributivity #:shape #(3 3) (tag 2) 'c (tag 2) 'f)
    (variant #:tag 8 'c 'f)))
+
+(test-case "Test `let*-variant'"
+  (check-equal? (let*-variant ([v* (variant 1 2 3)]) v*) '(1 2 3))
+  (check-equal? (let*-variant ([(v . v*) (variant 1 2 3)]) (cons v* v))
+                (let*-variant ([(v . v*) (variant 1 2 3 #:tag 0)]) (cons v* v)))
+  (check-exn exn:fail:contract?
+             (λ () (let*-variant ([(v . v*) (variant 1 2 3 #:tag 1)]) (cons v* v))))
+  (check-equal? (let*-variant ([(#:tag n v . v*)
+                                (variant 1 2 3 #:tag 1)])
+                              (cons (cons v* v) n))
+                '(((2 3) . 1) . 1))
+  (check-equal? (let*-variant ([(#:tag [n 0] v . v*)
+                                (variant 1 2 3)])
+                              (cons (cons v* v) n))
+                '(((2 3) . 1) . 0))
+  (check-exn exn:fail:contract?
+             (λ () (let*-variant ([(#:tag n v . v*) (variant 1 2 3)]) (cons (cons v* v) n))))
+  (check-exn exn:fail:contract?
+             (λ () (let*-variant ([(#:tag n v . v*) (variant 1 2 3 #:tag 0)]) (cons (cons v* v) n)))))
+
+(test-case "Test `define-variant'"
+  (check-equal? (let () (define-variant v* (variant 1 2 3)) v*) '(1 2 3))
+  (check-equal? (let () (define-variant (v . v*) (variant 1 2 3)) (cons v* v))
+                (let () (define-variant (v . v*) (variant 1 2 3 #:tag 0)) (cons v* v)))
+  (check-exn exn:fail:contract?
+             (λ ()
+               (define-variant (v . v*) (variant 1 2 3 #:tag 1))
+               (cons v* v)))
+  (check-equal? (let ()
+                  (define-variant (#:tag n v . v*) (variant 1 2 3 #:tag 1))
+                  (cons (cons v* v) n))
+                '(((2 3) . 1) . 1))
+  (check-equal? (let ()
+                  (define-variant (#:tag [n 0] v . v*) (variant 1 2 3))
+                  (cons (cons v* v) n))
+                '(((2 3) . 1) . 0))
+  (check-exn exn:fail:contract?
+             (λ ()
+               (define-variant (#:tag n v . v*) (variant 1 2 3))
+               (cons (cons v* v) n)))
+  (check-exn exn:fail:contract?
+             (λ ()
+               (define-variant (#:tag n v . v*) (variant 1 2 3 #:tag 0))
+               (cons (cons v* v) n))))
+
