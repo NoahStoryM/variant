@@ -178,10 +178,10 @@ combined index in column-major order.
 This procedure follows the usual distributive law of multiplication
 over addition.  As an illustration,
 
-@centered{@math{(a + b + c) \times (d + e + f) \equiv
-                a \times d + b \times d + c \times d
-                + a \times e + b \times e + c \times e
-                + a \times f + b \times f + c \times f}}
+@centered{@math{(a + b + c) × (d + e + f) ≅
+                a × d + b × d + c × d
+                + a × e + b × e + c × e
+                + a × f + b × f + c × f}}
 
 @variant-examples[
 (distributivity #:shape #(1) 'a)

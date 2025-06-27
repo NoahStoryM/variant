@@ -15,7 +15,7 @@
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
    [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
-   [distributivity procedure?])
+   [distributivity (->* (#:shape vector?) () #:rest (listof any/c) any)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -86,8 +86,6 @@
   ;; options for each argument.  Each argument may optionally start with a
   ;; `tag` structure indicating which option was chosen.  The result is a
   ;; single variant tagged with the combined index.
-  (unless (vector? shape)
-    (raise-argument-error 'distributivity "vector?" shape))
   (define len (vector-length shape))
   (define-values (idx* v* remaining*)
     (for/fold ([idx* '()] [v* '()] [rest* arg*]
