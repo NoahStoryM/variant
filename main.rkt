@@ -15,7 +15,8 @@
    [inclusion (-> integer? (->* () (#:tag natural?) #:rest (listof any/c) any))]
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
-   [compose/variant (->* () () #:rest (listof procedure?) procedure?)])
+   [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
+   [distributivity (->* (#:shape vector?) () #:rest (listof any/c) any)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -86,6 +87,47 @@
             ([f (in-list f*)])
     (compose2/variant acc f)))
 
+;; utilities
+(require racket/list)
+
+(define (distributivity #:shape shape . arg*)
+  ;; Distribute nested sums over products according to `shape`.
+  ;; `shape` is a vector of natural numbers describing the number of
+  ;; options for each argument.  Each argument must begin with a `tag`
+  ;; structure (including @racket[(tag 0)]).  All values until the next
+  ;; tag belong to that argument.  The result is a single variant tagged
+  ;; with the combined index.
+  (define len (vector-length shape))
+  ;; collect indices in a vector since the length matches `shape`
+  (define idx* (make-vector len))
+  (define res*
+    (for/fold ([arg* arg*] [res* '()]
+               #:result
+               (begin
+                 (when (pair? arg*)
+                   (raise-arity-error 'distributivity len))
+                 (reverse res*)))
+              ([size (in-vector shape)]
+               [i (in-naturals)])
+      (unless (and (pair? arg*) (tag? (car arg*)))
+        (raise-arity-error 'distributivity len))
+      (define idx (tag-number (car arg*)))
+      (unless (< idx size)
+        (raise-argument-error 'distributivity (format "tag < ~a" size) idx))
+      (define-values (vals rest)
+        (splitf-at (cdr arg*) (λ (x) (not (tag? x)))))
+      (unless (pair? vals)
+        (raise-arity-error 'distributivity len))
+      (vector-set! idx* i idx)
+      (values rest (foldl cons res* vals))))
+  ;; compute combined tag using column-major enumeration
+  (define tag-num
+    (for/fold ([acc 0] [stride 1] #:result acc)
+              ([idx (in-vector idx*)]
+               [size (in-vector shape)])
+      (values (+ acc (* idx stride))
+              (* stride size))))
+  (apply variant #:tag tag-num res*))
 
 (begin-for-syntax
   ;; Syntax classes used by the macro definitions below.  They parse the

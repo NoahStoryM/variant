@@ -118,6 +118,33 @@ simply yields @racket[f].
 ]
 }
 
+@defproc[(distributivity [#:shape shape vector?] [v any/c] ...) any]{
+Distributes nested sums over products according to @racket[shape].
+Each argument must start with a @racket[tag] (including @racket[(tag 0)])
+indicating which option was chosen. The resulting @tech{variant} is tagged
+with the combined index in column-major order.
+
+This procedure follows the usual distributive law of multiplication
+over addition.  As an illustration:
+
+@centered{
+@math{
+(a + b + c) × (d + e + f)
+≅ a × d + b × d + c × d
++ a × e + b × e + c × e
++ a × f + b × f + c × f
+}}
+
+@variant-examples[
+(distributivity #:shape #(1) (tag 0) 'a)
+(distributivity #:shape #(2) (tag 1) 'b)
+(distributivity #:shape #(1 2) (tag 0) 'a (tag 1) 'c)
+(distributivity #:shape #(2 1)
+                (tag 1) 'a 'b 'c
+                (tag 0) 1 2 3)
+]
+}
+
 @defform[(let*-variant ([kw-formals rhs-expr] ...) body ...+)
          #:grammar
          [(kw-formals (arg ...)
