@@ -136,12 +136,15 @@ over addition.  As an illustration:
 }}
 
 @variant-examples[
-(distributivity #:shape #(1) (tag 0) 'a)
-(distributivity #:shape #(2) (tag 1) 'b)
-(distributivity #:shape #(1 2) (tag 0) 'a (tag 1) 'c)
-(distributivity #:shape #(2 1)
-                (tag 1) 'a 'b 'c
-                (tag 0) 1 2 3)
+(distributivity #:shape #(3 3) (tag 0) 'a0 'a1 (tag 0) 'd0 'd1)
+(distributivity #:shape #(3 3) (tag 1) 'b0 'b1 (tag 0) 'd0 'd1)
+(distributivity #:shape #(3 3) (tag 2) 'c0 'c1 (tag 0) 'd0 'd1)
+(distributivity #:shape #(3 3) (tag 0) 'a0 'a1 (tag 1) 'e0 'e1)
+(distributivity #:shape #(3 3) (tag 1) 'b0 'b1 (tag 1) 'e0 'e1)
+(distributivity #:shape #(3 3) (tag 2) 'c0 'c1 (tag 1) 'e0 'e1)
+(distributivity #:shape #(3 3) (tag 0) 'a0 'a1 (tag 2) 'f0 'f1)
+(distributivity #:shape #(3 3) (tag 1) 'b0 'b1 (tag 2) 'f0 'f1)
+(distributivity #:shape #(3 3) (tag 2) 'c0 'c1 (tag 2) 'f0 'f1)
 ]
 }
 
