@@ -17,10 +17,8 @@
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
    [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
-  [distributivity/column-major
-   (->* (#:shape vector?) () #:rest (listof any/c) any)]
-  [distributivity/row-major
-   (->* (#:shape vector?) () #:rest (listof any/c) any)])
+   [distributivity/column (->* (#:shape vector?) () #:rest (listof any/c) any)]
+   [distributivity/row (->* (#:shape vector?) () #:rest (listof any/c) any)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -92,16 +90,16 @@
     (compose2/variant acc f)))
 
 
-(define (column-major-index shape idx*)
-  ;; Combine indices using column-major enumeration
+(define (column-index shape idx*)
+  ;; Combine indices using column enumeration
   (for/fold ([acc 0] [stride 1] #:result acc)
             ([idx (in-vector idx*)]
              [size (in-vector shape)])
     (values (+ acc (* idx stride))
             (* stride size))))
 
-(define (row-major-index shape idx*)
-  ;; Combine indices using row-major enumeration
+(define (row-index shape idx*)
+  ;; Combine indices using row enumeration
   (define len (vector-length shape))
   (for/fold ([acc 0] [stride 1] #:result acc)
             ([i (in-range (sub1 len) -1 -1)])
@@ -141,11 +139,11 @@
   (define tag-num (enumerator shape idx*))
   (apply variant #:tag tag-num res*))
 
-(define distributivity/column-major
-  (make-distributivity column-major-index 'distributivity/column-major))
+(define distributivity/column
+  (make-distributivity column-index 'distributivity/column))
 
-(define distributivity/row-major
-  (make-distributivity row-major-index 'distributivity/row-major))
+(define distributivity/row
+  (make-distributivity row-index 'distributivity/row))
 
 (begin-for-syntax
   ;; Syntax classes used by the macro definitions below.  They parse the
