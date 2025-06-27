@@ -12,10 +12,10 @@
   ;; Contracted functions that make up the public API
   (contract-out
    [variant procedure?]
+   [inclusion (-> integer? (->* () (#:tag natural?) #:rest (listof any/c) any))]
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
-   [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
-   [inclusion (-> natural? (->* () (#:tag natural?) #:rest (listof any/c) any))])
+   [compose/variant (->* () () #:rest (listof procedure?) procedure?)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -42,6 +42,12 @@
   (if (zero? n)
       (apply values v*)
       (apply values (tag n) v*)))
+
+(define ((inclusion m) #:tag [n 0] . v*)
+  ;; Additive inclusion for tags.  The returned procedure forwards
+  ;; its incoming tag (defaulting to 0) and adds `n` to it, always
+  ;; producing an explicitly tagged variant.
+  (apply values (tag (+ m n)) v*))
 
 (define (apply/variant proc #:tag [n 0] . v*)
   ;; Like `apply`, but optionally forwards the `#:tag` keyword to
@@ -79,12 +85,6 @@
   (for/fold ([acc variant])
             ([f (in-list f*)])
     (compose2/variant acc f)))
-
-;; Additive inclusion for tags.  The returned procedure forwards its
-;; incoming tag (defaulting to @racket[0]) and adds @racket[n] to it,
-;; always producing an explicitly tagged variant.
-(define ((inclusion n) #:tag [m 0] . v*)
-  (apply values (tag (+ n m)) v*))
 
 
 (begin-for-syntax
