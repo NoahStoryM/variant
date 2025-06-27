@@ -87,35 +87,43 @@
             ([f (in-list f*)])
     (compose2/variant acc f)))
 
+;; utilities
+(require racket/list)
+
 (define (distributivity #:shape shape . arg*)
   ;; Distribute nested sums over products according to `shape`.
   ;; `shape` is a vector of natural numbers describing the number of
-  ;; options for each argument.  Each argument may optionally start with a
-  ;; `tag` structure indicating which option was chosen.  The result is a
-  ;; single variant tagged with the combined index.
+  ;; options for each argument.  Each argument must begin with a `tag`
+  ;; structure (including @racket[(tag 0)]).  All values until the next
+  ;; tag belong to that argument.  The result is a single variant tagged
+  ;; with the combined index.
   (define len (vector-length shape))
-  (define-values (idx* res*)
-    (for/fold ([idx* '()] [res* '()] [arg* arg*]
+  ;; collect indices in a vector since the length matches `shape`
+  (define idx* (make-vector len))
+  (define res*
+    (for/fold ([arg* arg*] [res* '()]
                #:result
-               (if (pair? arg*)
-                   (raise-arity-error 'distributivity len)
-                   (values (reverse idx*) (reverse res*))))
-              ([size (in-vector shape)])
-      (let-values ([(idx arg*)
-                    (if (and (pair? arg*) (tag? (car arg*)))
-                        (values (tag-number (car arg*)) (cdr arg*))
-                        (values 0 arg*))])
-        (unless (< idx size)
-          (raise-argument-error 'distributivity (format "tag < ~a" size) idx))
-        (unless (pair? arg*)
-          (raise-arity-error 'distributivity len))
-        (values (cons idx idx*)
-                (cons (car arg*) res*)
-                (cdr arg*)))))
+               (begin
+                 (when (pair? arg*)
+                   (raise-arity-error 'distributivity len))
+                 (reverse res*)))
+              ([size (in-vector shape)]
+               [i (in-naturals)])
+      (unless (and (pair? arg*) (tag? (car arg*)))
+        (raise-arity-error 'distributivity len))
+      (define idx (tag-number (car arg*)))
+      (unless (< idx size)
+        (raise-argument-error 'distributivity (format "tag < ~a" size) idx))
+      (define-values (vals rest)
+        (splitf-at (cdr arg*) (λ (x) (not (tag? x)))))
+      (unless (pair? vals)
+        (raise-arity-error 'distributivity len))
+      (vector-set! idx* i idx)
+      (values rest (foldl cons res* vals))))
   ;; compute combined tag using column-major enumeration
   (define tag-num
     (for/fold ([acc 0] [stride 1] #:result acc)
-              ([idx (in-list idx*)]
+              ([idx (in-vector idx*)]
                [size (in-vector shape)])
       (values (+ acc (* idx stride))
               (* stride size))))

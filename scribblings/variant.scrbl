@@ -120,8 +120,9 @@ simply yields @racket[f].
 
 @defproc[(distributivity [#:shape shape vector?] [v any/c] ...) any]{
 Distributes nested sums over products according to @racket[shape].
-Each argument may optionally start with a @racket[tag] indicating
-which option was chosen. The resulting variant is tagged with the
+Each argument must start with a @racket[tag] (including
+@racket[(tag 0)]) indicating which option was chosen. The resulting
+variant is tagged with the
 combined index in column-major order.
 
 This procedure follows the usual distributive law of multiplication
@@ -136,9 +137,12 @@ over addition.  As an illustration,
 }}
 
 @variant-examples[
-(distributivity #:shape #(1) 'a)
+(distributivity #:shape #(1) (tag 0) 'a)
 (distributivity #:shape #(2) (tag 1) 'b)
-(distributivity #:shape #(1 2) 'a (tag 1) 'c)
+(distributivity #:shape #(1 2) (tag 0) 'a (tag 1) 'c)
+(distributivity #:shape #(2 1)
+                (tag 1) 'a 'b 'c
+                (tag 0) 1 2 3)
 ]
 }
 
