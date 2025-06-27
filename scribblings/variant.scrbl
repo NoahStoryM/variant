@@ -120,13 +120,12 @@ simply yields @racket[f].
 
 @defproc[(distributivity [#:shape shape vector?] [v any/c] ...) any]{
 Distributes nested sums over products according to @racket[shape].
-Each argument must start with a @racket[tag] (including
-@racket[(tag 0)]) indicating which option was chosen. The resulting
-variant is tagged with the
-combined index in column-major order.
+Each argument must start with a @racket[tag] (including @racket[(tag 0)])
+indicating which option was chosen. The resulting @tech{variant} is tagged
+with the combined index in column-major order.
 
 This procedure follows the usual distributive law of multiplication
-over addition.  As an illustration,
+over addition.  As an illustration:
 
 @centered{
 @math{

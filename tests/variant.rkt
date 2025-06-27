@@ -157,24 +157,9 @@
   (distributivity #:shape #(2 1) (tag 1) 'b (tag 0) 'c)
   (variant #:tag 1 'b 'c))
 
-  ;; example with multi-valued arguments starting with tags
-  (check-variant=
-   (distributivity #:shape #(2 1)
-                   (tag 1) 'a 'b 'c
-                   (tag 0) 1 2 3)
-   (variant #:tag 1 'a 'b 'c 1 2 3))
-
-  ;; error cases for missing tags and arity issues
-  (check-exn exn:fail:contract? (λ ()
-                                 (distributivity #:shape #(1) 'a)))
-  (check-exn exn:fail:contract? (λ ()
-                                 (distributivity #:shape #(1) (tag 0))))
-  (check-exn exn:fail:contract? (λ ()
-                                 (distributivity #:shape #(1) (tag 0) 'a (tag 0))))
-  (check-exn exn:fail:contract? (λ ()
-                                 (distributivity #:shape #(1) (tag 2) 'a)))
-
-  ;; (a + b) × (c + d) ≅ a × c + b × c + a × d + b × d
+  ;; (a + b) × (c + d)
+  ;; ≅ a × c + b × c
+  ;; + a × d + b × d
   (check-variant=
    (distributivity #:shape #(2 2) (tag 0) 'a (tag 0) 'c)
    (values 'a 'c))
@@ -189,12 +174,9 @@
    (variant #:tag 3 'b 'd))
 
   ;; (a + b) × (c + d + e)
-  ;; ≅ a × c
-  ;; + b × c
-  ;; + a × d
-  ;; + b × d
-  ;; + a × e
-  ;; + b × e
+  ;; ≅ a × c + b × c
+  ;; + a × d + b × d
+  ;; + a × e + b × e
   (check-variant=
    (distributivity #:shape #(2 3) (tag 0) 'a (tag 0) 'c)
    (values 'a 'c))
@@ -278,7 +260,24 @@
    (variant #:tag 7 'b 'f))
   (check-variant=
    (distributivity #:shape #(3 3) (tag 2) 'c (tag 2) 'f)
-   (variant #:tag 8 'c 'f)))
+   (variant #:tag 8 'c 'f))
+
+  ;; example with multi-valued arguments starting with tags
+  (check-variant=
+   (distributivity #:shape #(2 1)
+                   (tag 1) 'a 'b 'c
+                   (tag 0) 1 2 3)
+   (variant #:tag 1 'a 'b 'c 1 2 3))
+
+  ;; error cases for missing tags and arity issues
+  (check-exn exn:fail:contract?
+             (λ () (distributivity #:shape #(1) 'a)))
+  (check-exn exn:fail:contract?
+             (λ () (distributivity #:shape #(1) (tag 0))))
+  (check-exn exn:fail:contract?
+             (λ () (distributivity #:shape #(1) (tag 0) 'a (tag 0))))
+  (check-exn exn:fail:contract?
+             (λ () (distributivity #:shape #(1) (tag 2) 'a))))
 
 (test-case "Test `let*-variant'"
   (check-equal? (let*-variant ([v* (variant 1 2 3)]) v*) '(1 2 3))
@@ -323,4 +322,3 @@
              (λ ()
                (define-variant (#:tag n v . v*) (variant 1 2 3 #:tag 0))
                (cons (cons v* v) n))))
-
