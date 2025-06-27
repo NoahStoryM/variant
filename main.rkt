@@ -110,8 +110,7 @@
     (values (+ acc (* idx stride))
             (* stride size))))
 
-(define (make-distributivity enumerator name)
-  (λ (#:shape shape . arg*)
+(define ((make-distributivity enumerator name) #:shape shape . arg*)
     ;; Distribute nested sums over products according to `shape`.
     ;; `shape` is a vector of natural numbers describing the number of
     ;; options for each argument.  Each argument must begin with a `tag`
@@ -140,7 +139,7 @@
         (vector-set! idx* i idx)
         (values args (foldl cons res* vals))))
     (define tag-num (enumerator shape idx*))
-    (apply variant #:tag tag-num res*)))
+    (apply variant #:tag tag-num res*))
 
 (define distributivity/column-major
   (make-distributivity column-major-index 'distributivity/column-major))
