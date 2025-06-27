@@ -111,35 +111,35 @@
             (* stride size))))
 
 (define ((make-distributivity enumerator name) #:shape shape . arg*)
-    ;; Distribute nested sums over products according to `shape`.
-    ;; `shape` is a vector of natural numbers describing the number of
-    ;; options for each argument.  Each argument must begin with a `tag`
-    ;; structure (including `(tag 0)`), followed by the values for that
-    ;; argument.  The combined variant uses `enumerator` to compute its tag.
-    (define len (vector-length shape))
-    (define idx* (make-vector len))
-    (define res*
-      (for/fold ([arg* arg*] [res* '()]
-                 #:result
-                 (begin
-                   (unless (null? arg*)
-                     (raise-arity-error name len))
-                   (reverse res*)))
-                ([size (in-vector shape)]
-                 [i (in-naturals)])
-        (unless (and (pair? arg*) (tag? (car arg*)))
-          (raise-arity-error name len))
-        (define idx (tag-number (car arg*)))
-        (unless (< idx size)
-          (raise-argument-error name (format "tag < ~a" size) idx))
-        (define-values (vals args)
-          (splitf-at (cdr arg*) not-tag?))
-        (unless (pair? vals)
-          (raise-arity-error name len))
-        (vector-set! idx* i idx)
-        (values args (foldl cons res* vals))))
-    (define tag-num (enumerator shape idx*))
-    (apply variant #:tag tag-num res*))
+  ;; Distribute nested sums over products according to `shape`.
+  ;; `shape` is a vector of natural numbers describing the number of
+  ;; options for each argument.  Each argument must begin with a `tag`
+  ;; structure (including `(tag 0)`), followed by the values for that
+  ;; argument.  The combined variant uses `enumerator` to compute its tag.
+  (define len (vector-length shape))
+  (define idx* (make-vector len))
+  (define res*
+    (for/fold ([arg* arg*] [res* '()]
+               #:result
+               (begin
+                 (unless (null? arg*)
+                   (raise-arity-error name len))
+                 (reverse res*)))
+              ([size (in-vector shape)]
+               [i (in-naturals)])
+      (unless (and (pair? arg*) (tag? (car arg*)))
+        (raise-arity-error name len))
+      (define idx (tag-number (car arg*)))
+      (unless (< idx size)
+        (raise-argument-error name (format "tag < ~a" size) idx))
+      (define-values (vals args)
+        (splitf-at (cdr arg*) not-tag?))
+      (unless (pair? vals)
+        (raise-arity-error name len))
+      (vector-set! idx* i idx)
+      (values args (foldl cons res* vals))))
+  (define tag-num (enumerator shape idx*))
+  (apply variant #:tag tag-num res*))
 
 (define distributivity/column-major
   (make-distributivity column-major-index 'distributivity/column-major))
