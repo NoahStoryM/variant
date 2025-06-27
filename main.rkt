@@ -17,7 +17,10 @@
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
    [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
-   [distributivity (->* (#:shape vector?) () #:rest (listof any/c) any)])
+  [distributivity/column-major
+   (->* (#:shape vector?) () #:rest (listof any/c) any)]
+  [distributivity/row-major
+   (->* (#:shape vector?) () #:rest (listof any/c) any)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -88,44 +91,61 @@
             ([f (in-list f*)])
     (compose2/variant acc f)))
 
-(define (distributivity #:shape shape . arg*)
+
+(define (column-major-index shape idx*)
+  ;; Combine indices using column-major enumeration
+  (for/fold ([acc 0] [stride 1] #:result acc)
+            ([idx (in-vector idx*)]
+             [size (in-vector shape)])
+    (values (+ acc (* idx stride))
+            (* stride size))))
+
+(define (row-major-index shape idx*)
+  ;; Combine indices using row-major enumeration
+  (define len (vector-length shape))
+  (for/fold ([acc 0] [stride 1] #:result acc)
+            ([i (in-range (sub1 len) -1 -1)])
+    (define idx (vector-ref idx* i))
+    (define size (vector-ref shape i))
+    (values (+ acc (* idx stride))
+            (* stride size))))
+
+(define ((make-distributivity enumerator name) #:shape shape . arg*)
   ;; Distribute nested sums over products according to `shape`.
   ;; `shape` is a vector of natural numbers describing the number of
   ;; options for each argument.  Each argument must begin with a `tag`
-  ;; structure (including `(tag 0)`).  All values until the next
-  ;; tag belong to that argument.  The result is a single variant tagged
-  ;; with the combined index.
+  ;; structure (including `(tag 0)`), followed by the values for that
+  ;; argument.  The combined variant uses `enumerator` to compute its tag.
   (define len (vector-length shape))
-  ;; collect indices in a vector since the length matches `shape`
   (define idx* (make-vector len))
   (define res*
     (for/fold ([arg* arg*] [res* '()]
                #:result
                (begin
                  (unless (null? arg*)
-                   (raise-arity-error 'distributivity len))
+                   (raise-arity-error name len))
                  (reverse res*)))
               ([size (in-vector shape)]
                [i (in-naturals)])
       (unless (and (pair? arg*) (tag? (car arg*)))
-        (raise-arity-error 'distributivity len))
+        (raise-arity-error name len))
       (define idx (tag-number (car arg*)))
       (unless (< idx size)
-        (raise-argument-error 'distributivity (format "tag < ~a" size) idx))
+        (raise-argument-error name (format "tag < ~a" size) idx))
       (define-values (vals args)
         (splitf-at (cdr arg*) not-tag?))
       (unless (pair? vals)
-        (raise-arity-error 'distributivity len))
+        (raise-arity-error name len))
       (vector-set! idx* i idx)
       (values args (foldl cons res* vals))))
-  ;; compute combined tag using column-major enumeration
-  (define tag-num
-    (for/fold ([acc 0] [stride 1] #:result acc)
-              ([idx (in-vector idx*)]
-               [size (in-vector shape)])
-      (values (+ acc (* idx stride))
-              (* stride size))))
+  (define tag-num (enumerator shape idx*))
   (apply variant #:tag tag-num res*))
+
+(define distributivity/column-major
+  (make-distributivity column-major-index 'distributivity/column-major))
+
+(define distributivity/row-major
+  (make-distributivity row-major-index 'distributivity/row-major))
 
 (begin-for-syntax
   ;; Syntax classes used by the macro definitions below.  They parse the
