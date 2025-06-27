@@ -160,13 +160,13 @@ computed in row-major order.
 }}
 @variant-examples[
  (distributivity/row-major #:shape #(3 3) (tag 0) 'a0 'a1 (tag 0) 'd0 'd1)
- (distributivity/row-major #:shape #(3 3) (tag 1) 'b0 'b1 (tag 0) 'd0 'd1)
- (distributivity/row-major #:shape #(3 3) (tag 2) 'c0 'c1 (tag 0) 'd0 'd1)
  (distributivity/row-major #:shape #(3 3) (tag 0) 'a0 'a1 (tag 1) 'e0 'e1)
- (distributivity/row-major #:shape #(3 3) (tag 1) 'b0 'b1 (tag 1) 'e0 'e1)
- (distributivity/row-major #:shape #(3 3) (tag 2) 'c0 'c1 (tag 1) 'e0 'e1)
  (distributivity/row-major #:shape #(3 3) (tag 0) 'a0 'a1 (tag 2) 'f0 'f1)
+ (distributivity/row-major #:shape #(3 3) (tag 1) 'b0 'b1 (tag 0) 'd0 'd1)
+ (distributivity/row-major #:shape #(3 3) (tag 1) 'b0 'b1 (tag 1) 'e0 'e1)
  (distributivity/row-major #:shape #(3 3) (tag 1) 'b0 'b1 (tag 2) 'f0 'f1)
+ (distributivity/row-major #:shape #(3 3) (tag 2) 'c0 'c1 (tag 0) 'd0 'd1)
+ (distributivity/row-major #:shape #(3 3) (tag 2) 'c0 'c1 (tag 1) 'e0 'e1)
  (distributivity/row-major #:shape #(3 3) (tag 2) 'c0 'c1 (tag 2) 'f0 'f1)
 ]
 }

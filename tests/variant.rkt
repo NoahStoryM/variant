@@ -360,11 +360,11 @@
    (distributivity/row-major #:shape #(2 2) (tag 0) 'a (tag 0) 'c)
    (values 'a 'c))
   (check-variant=
-   (distributivity/row-major #:shape #(2 2) (tag 1) 'b (tag 0) 'c)
-   (variant #:tag 2 'b 'c))
-  (check-variant=
    (distributivity/row-major #:shape #(2 2) (tag 0) 'a (tag 1) 'd)
    (variant #:tag 1 'a 'd))
+  (check-variant=
+   (distributivity/row-major #:shape #(2 2) (tag 1) 'b (tag 0) 'c)
+   (variant #:tag 2 'b 'c))
   (check-variant=
    (distributivity/row-major #:shape #(2 2) (tag 1) 'b (tag 1) 'd)
    (variant #:tag 3 'b 'd))
@@ -376,17 +376,17 @@
    (distributivity/row-major #:shape #(2 3) (tag 0) 'a (tag 0) 'c)
    (values 'a 'c))
   (check-variant=
-   (distributivity/row-major #:shape #(2 3) (tag 1) 'b (tag 0) 'c)
-   (variant #:tag 3 'b 'c))
-  (check-variant=
    (distributivity/row-major #:shape #(2 3) (tag 0) 'a (tag 1) 'd)
    (variant #:tag 1 'a 'd))
   (check-variant=
-   (distributivity/row-major #:shape #(2 3) (tag 1) 'b (tag 1) 'd)
-   (variant #:tag 4 'b 'd))
-  (check-variant=
    (distributivity/row-major #:shape #(2 3) (tag 0) 'a (tag 2) 'e)
    (variant #:tag 2 'a 'e))
+  (check-variant=
+   (distributivity/row-major #:shape #(2 3) (tag 1) 'b (tag 0) 'c)
+   (variant #:tag 3 'b 'c))
+  (check-variant=
+   (distributivity/row-major #:shape #(2 3) (tag 1) 'b (tag 1) 'd)
+   (variant #:tag 4 'b 'd))
   (check-variant=
    (distributivity/row-major #:shape #(2 3) (tag 1) 'b (tag 2) 'e)
    (variant #:tag 5 'b 'e))
@@ -411,17 +411,17 @@
    (distributivity/row-major #:shape #(3 2) (tag 0) 'a (tag 0) 'd)
    (values 'a 'd))
   (check-variant=
-   (distributivity/row-major #:shape #(3 2) (tag 1) 'b (tag 0) 'd)
-   (variant #:tag 2 'b 'd))
-  (check-variant=
-   (distributivity/row-major #:shape #(3 2) (tag 2) 'c (tag 0) 'd)
-   (variant #:tag 4 'c 'd))
-  (check-variant=
    (distributivity/row-major #:shape #(3 2) (tag 0) 'a (tag 1) 'e)
    (variant #:tag 1 'a 'e))
   (check-variant=
+   (distributivity/row-major #:shape #(3 2) (tag 1) 'b (tag 0) 'd)
+   (variant #:tag 2 'b 'd))
+  (check-variant=
    (distributivity/row-major #:shape #(3 2) (tag 1) 'b (tag 1) 'e)
    (variant #:tag 3 'b 'e))
+  (check-variant=
+   (distributivity/row-major #:shape #(3 2) (tag 2) 'c (tag 0) 'd)
+   (variant #:tag 4 'c 'd))
   (check-variant=
    (distributivity/row-major #:shape #(3 2) (tag 2) 'c (tag 1) 'e)
    (variant #:tag 5 'c 'e))
@@ -434,26 +434,26 @@
    (distributivity/row-major #:shape #(3 3) (tag 0) 'a (tag 0) 'd)
    (values 'a 'd))
   (check-variant=
-   (distributivity/row-major #:shape #(3 3) (tag 1) 'b (tag 0) 'd)
-   (variant #:tag 3 'b 'd))
-  (check-variant=
-   (distributivity/row-major #:shape #(3 3) (tag 2) 'c (tag 0) 'd)
-   (variant #:tag 6 'c 'd))
-  (check-variant=
    (distributivity/row-major #:shape #(3 3) (tag 0) 'a (tag 1) 'e)
    (variant #:tag 1 'a 'e))
-  (check-variant=
-   (distributivity/row-major #:shape #(3 3) (tag 1) 'b (tag 1) 'e)
-   (variant #:tag 4 'b 'e))
-  (check-variant=
-   (distributivity/row-major #:shape #(3 3) (tag 2) 'c (tag 1) 'e)
-   (variant #:tag 7 'c 'e))
   (check-variant=
    (distributivity/row-major #:shape #(3 3) (tag 0) 'a (tag 2) 'f)
    (variant #:tag 2 'a 'f))
   (check-variant=
+   (distributivity/row-major #:shape #(3 3) (tag 1) 'b (tag 0) 'd)
+   (variant #:tag 3 'b 'd))
+  (check-variant=
+   (distributivity/row-major #:shape #(3 3) (tag 1) 'b (tag 1) 'e)
+   (variant #:tag 4 'b 'e))
+  (check-variant=
    (distributivity/row-major #:shape #(3 3) (tag 1) 'b (tag 2) 'f)
    (variant #:tag 5 'b 'f))
+  (check-variant=
+   (distributivity/row-major #:shape #(3 3) (tag 2) 'c (tag 0) 'd)
+   (variant #:tag 6 'c 'd))
+  (check-variant=
+   (distributivity/row-major #:shape #(3 3) (tag 2) 'c (tag 1) 'e)
+   (variant #:tag 7 'c 'e))
   (check-variant=
    (distributivity/row-major #:shape #(3 3) (tag 2) 'c (tag 2) 'f)
    (variant #:tag 8 'c 'f))
@@ -474,6 +474,7 @@
              (λ () (distributivity/row-major #:shape #(1) (tag 0) 'a (tag 0))))
   (check-exn exn:fail:contract?
             (λ () (distributivity/row-major #:shape #(1) (tag 2) 'a))))
+
 (test-case "Test `let*-variant'"
   (check-equal? (let*-variant ([v* (variant 1 2 3)]) v*) '(1 2 3))
   (check-equal? (let*-variant ([(v . v*) (variant 1 2 3)]) (cons v* v))
