@@ -47,6 +47,7 @@
 (test-case "Test `compose/variant'"
   (define (add1-tag x) (variant (add1 x) #:tag 1))
   (define (unwrap #:tag [n 0] x) (cons x n))
+  (check-equal? (compose/variant) variant)
   (check-variant=
    ((compose/variant) #:tag 2 1 2)
    (variant 1 2 #:tag 2))
