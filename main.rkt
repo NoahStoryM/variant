@@ -112,12 +112,12 @@
       (define idx (tag-number (car arg*)))
       (unless (< idx size)
         (raise-argument-error 'distributivity (format "tag < ~a" size) idx))
-      (define-values (vals rest)
+      (define-values (vals args)
         (splitf-at (cdr arg*) not-tag?))
       (unless (pair? vals)
         (raise-arity-error 'distributivity len))
       (vector-set! idx* i idx)
-      (values rest (foldl cons res* vals))))
+      (values args (foldl cons res* vals))))
   ;; compute combined tag using column-major enumeration
   (define tag-num
     (for/fold ([acc 0] [stride 1] #:result acc)
