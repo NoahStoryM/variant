@@ -403,6 +403,7 @@
    (distributivity/row-major #:shape #(3 1) (tag 2) 'c (tag 0) 'd)
    (variant #:tag 2 'c 'd))
 
+  ;; (a + b + c) × (d + e)
   ;; ≅ a × d + a × e
   ;; + b × d + b × e
   ;; + c × d + c × e
