@@ -17,7 +17,8 @@
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
    [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
-   [distributivity (->* (#:shape vector?) () #:rest (listof any/c) any)])
+   [distributivity/column-major (->* (#:shape vector?) () #:rest (listof any/c) any)]
+   [distributivity/row-major (->* (#:shape vector?) () #:rest (listof any/c) any)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -88,7 +89,7 @@
             ([f (in-list f*)])
     (compose2/variant acc f)))
 
-(define (distributivity #:shape shape . arg*)
+(define (distributivity/column-major #:shape shape . arg*)
   ;; Distribute nested sums over products according to `shape`.
   ;; `shape` is a vector of natural numbers describing the number of
   ;; options for each argument.  Each argument must begin with a `tag`
@@ -103,19 +104,19 @@
                #:result
                (begin
                  (unless (null? arg*)
-                   (raise-arity-error 'distributivity len))
+                   (raise-arity-error 'distributivity/column-major len))
                  (reverse res*)))
               ([size (in-vector shape)]
                [i (in-naturals)])
       (unless (and (pair? arg*) (tag? (car arg*)))
-        (raise-arity-error 'distributivity len))
+        (raise-arity-error 'distributivity/column-major len))
       (define idx (tag-number (car arg*)))
       (unless (< idx size)
-        (raise-argument-error 'distributivity (format "tag < ~a" size) idx))
+        (raise-argument-error 'distributivity/column-major (format "tag < ~a" size) idx))
       (define-values (vals args)
         (splitf-at (cdr arg*) not-tag?))
       (unless (pair? vals)
-        (raise-arity-error 'distributivity len))
+        (raise-arity-error 'distributivity/column-major len))
       (vector-set! idx* i idx)
       (values args (foldl cons res* vals))))
   ;; compute combined tag using column-major enumeration
@@ -123,6 +124,42 @@
     (for/fold ([acc 0] [stride 1] #:result acc)
               ([idx (in-vector idx*)]
                [size (in-vector shape)])
+      (values (+ acc (* idx stride))
+              (* stride size))))
+  (apply variant #:tag tag-num res*))
+
+(define (distributivity/row-major #:shape shape . arg*)
+  ;; Distribute nested sums over products according to `shape`.
+  ;; Same semantics as `distributivity/column-major` but the resulting
+  ;; variant uses row-major indexing for its tag.
+  (define len (vector-length shape))
+  (define idx* (make-vector len))
+  (define res*
+    (for/fold ([arg* arg*] [res* '()]
+               #:result
+               (begin
+                 (unless (null? arg*)
+                   (raise-arity-error 'distributivity/row-major len))
+                 (reverse res*)))
+              ([size (in-vector shape)]
+               [i (in-naturals)])
+      (unless (and (pair? arg*) (tag? (car arg*)))
+        (raise-arity-error 'distributivity/row-major len))
+      (define idx (tag-number (car arg*)))
+      (unless (< idx size)
+        (raise-argument-error 'distributivity/row-major (format "tag < ~a" size) idx))
+      (define-values (vals args)
+        (splitf-at (cdr arg*) not-tag?))
+      (unless (pair? vals)
+        (raise-arity-error 'distributivity/row-major len))
+      (vector-set! idx* i idx)
+      (values args (foldl cons res* vals))))
+  ;; compute combined tag using row-major enumeration
+  (define tag-num
+    (for/fold ([acc 0] [stride 1] #:result acc)
+              ([i (in-range (sub1 len) -1 -1)])
+      (define idx (vector-ref idx* i))
+      (define size (vector-ref shape i))
       (values (+ acc (* idx stride))
               (* stride size))))
   (apply variant #:tag tag-num res*))
