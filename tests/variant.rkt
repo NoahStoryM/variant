@@ -87,7 +87,7 @@
 (test-case "Test `distributivity'"
   ;; a
   (check-variant=
-   (distributivity #:shape #(1) 'a)
+   (distributivity #:shape #(1) (tag 0) 'a)
    'a)
   (check-variant=
    (distributivity #:shape #(1) (tag 0) 'a)
@@ -95,7 +95,7 @@
 
   ;; a + b
   (check-variant=
-   (distributivity #:shape #(2) 'a)
+   (distributivity #:shape #(2) (tag 0) 'a)
    'a)
   (check-variant=
    (distributivity #:shape #(2) (tag 1) 'b)
@@ -106,26 +106,26 @@
    (distributivity #:shape #(1 1) (tag 0) 'a (tag 0) 'b)
    (values 'a 'b))
   (check-variant=
-   (distributivity #:shape #(1 1) 'a (tag 0) 'b)
+   (distributivity #:shape #(1 1) (tag 0) 'a (tag 0) 'b)
    (values 'a 'b))
   (check-variant=
-   (distributivity #:shape #(1 1) (tag 0) 'a 'b)
+   (distributivity #:shape #(1 1) (tag 0) 'a (tag 0) 'b)
    (values 'a 'b))
   (check-variant=
-   (distributivity #:shape #(1 1) 'a 'b)
+   (distributivity #:shape #(1 1) (tag 0) 'a (tag 0) 'b)
    (values 'a 'b))
 
   ;; a × (b + c)
   ;; ≅ a × b
   ;; + a × c
   (check-variant=
-   (distributivity #:shape #(1 2) 'a 'b)
+   (distributivity #:shape #(1 2) (tag 0) 'a (tag 0) 'b)
    (values 'a 'b))
   (check-variant=
-   (distributivity #:shape #(1 2) 'a (tag 0) 'b)
+   (distributivity #:shape #(1 2) (tag 0) 'a (tag 0) 'b)
    (values 'a 'b))
   (check-variant=
-   (distributivity #:shape #(1 2) 'a (tag 1) 'c)
+   (distributivity #:shape #(1 2) (tag 0) 'a (tag 1) 'c)
    (variant #:tag 1 'a 'c))
 
   ;; a × (b + c + d)
@@ -133,39 +133,56 @@
   ;; + a × c
   ;; + a × d
   (check-variant=
-   (distributivity #:shape #(1 3) 'a 'b)
+   (distributivity #:shape #(1 3) (tag 0) 'a (tag 0) 'b)
    (values 'a 'b))
   (check-variant=
-   (distributivity #:shape #(1 3) 'a (tag 0) 'b)
+   (distributivity #:shape #(1 3) (tag 0) 'a (tag 0) 'b)
    (values 'a 'b))
   (check-variant=
-   (distributivity #:shape #(1 3) 'a (tag 1) 'c)
+   (distributivity #:shape #(1 3) (tag 0) 'a (tag 1) 'c)
    (variant #:tag 1 'a 'c))
   (check-variant=
-   (distributivity #:shape #(1 3) 'a (tag 2) 'd)
+   (distributivity #:shape #(1 3) (tag 0) 'a (tag 2) 'd)
    (variant #:tag 2 'a 'd))
 
   ;; (a + b) × c
   ;; ≅ a × c + b × c
   (check-variant=
-   (distributivity #:shape #(2 1) 'a 'c)
+   (distributivity #:shape #(2 1) (tag 0) 'a (tag 0) 'c)
    (values 'a 'c))
   (check-variant=
-   (distributivity #:shape #(2 1) (tag 0) 'a 'c)
+   (distributivity #:shape #(2 1) (tag 0) 'a (tag 0) 'c)
    (values 'a 'c))
   (check-variant=
-   (distributivity #:shape #(2 1) (tag 1) 'b 'c)
-   (variant #:tag 1 'b 'c))
+  (distributivity #:shape #(2 1) (tag 1) 'b (tag 0) 'c)
+  (variant #:tag 1 'b 'c))
+
+  ;; example with multi-valued arguments starting with tags
+  (check-variant=
+   (distributivity #:shape #(2 1)
+                   (tag 1) 'a 'b 'c
+                   (tag 0) 1 2 3)
+   (variant #:tag 1 'a 'b 'c 1 2 3))
+
+  ;; error cases for missing tags and arity issues
+  (check-exn exn:fail:contract? (λ ()
+                                 (distributivity #:shape #(1) 'a)))
+  (check-exn exn:fail:contract? (λ ()
+                                 (distributivity #:shape #(1) (tag 0))))
+  (check-exn exn:fail:contract? (λ ()
+                                 (distributivity #:shape #(1) (tag 0) 'a (tag 0))))
+  (check-exn exn:fail:contract? (λ ()
+                                 (distributivity #:shape #(1) (tag 2) 'a)))
 
   ;; (a + b) × (c + d) ≅ a × c + b × c + a × d + b × d
   (check-variant=
-   (distributivity #:shape #(2 2) 'a 'c)
+   (distributivity #:shape #(2 2) (tag 0) 'a (tag 0) 'c)
    (values 'a 'c))
   (check-variant=
-   (distributivity #:shape #(2 2) (tag 1) 'b 'c)
+   (distributivity #:shape #(2 2) (tag 1) 'b (tag 0) 'c)
    (variant #:tag 1 'b 'c))
   (check-variant=
-   (distributivity #:shape #(2 2) 'a (tag 1) 'd)
+   (distributivity #:shape #(2 2) (tag 0) 'a (tag 1) 'd)
    (variant #:tag 2 'a 'd))
   (check-variant=
    (distributivity #:shape #(2 2) (tag 1) 'b (tag 1) 'd)
@@ -179,19 +196,19 @@
   ;; + a × e
   ;; + b × e
   (check-variant=
-   (distributivity #:shape #(2 3) 'a 'c)
+   (distributivity #:shape #(2 3) (tag 0) 'a (tag 0) 'c)
    (values 'a 'c))
   (check-variant=
-   (distributivity #:shape #(2 3) (tag 1) 'b 'c)
+   (distributivity #:shape #(2 3) (tag 1) 'b (tag 0) 'c)
    (variant #:tag 1 'b 'c))
   (check-variant=
-   (distributivity #:shape #(2 3) 'a (tag 1) 'd)
+   (distributivity #:shape #(2 3) (tag 0) 'a (tag 1) 'd)
    (variant #:tag 2 'a 'd))
   (check-variant=
    (distributivity #:shape #(2 3) (tag 1) 'b (tag 1) 'd)
    (variant #:tag 3 'b 'd))
   (check-variant=
-   (distributivity #:shape #(2 3) 'a (tag 2) 'e)
+   (distributivity #:shape #(2 3) (tag 0) 'a (tag 2) 'e)
    (variant #:tag 4 'a 'e))
   (check-variant=
    (distributivity #:shape #(2 3) (tag 1) 'b (tag 2) 'e)
@@ -200,29 +217,29 @@
   ;; (a + b + c) × d
   ;; ≅ a × d + b × d + c × d
   (check-variant=
-   (distributivity #:shape #(3 1) 'a 'd)
+   (distributivity #:shape #(3 1) (tag 0) 'a (tag 0) 'd)
    (values 'a 'd))
   (check-variant=
-   (distributivity #:shape #(3 1) (tag 1) 'b 'd)
+   (distributivity #:shape #(3 1) (tag 1) 'b (tag 0) 'd)
    (variant #:tag 1 'b 'd))
   (check-variant=
-   (distributivity #:shape #(3 1) (tag 2) 'c 'd)
+   (distributivity #:shape #(3 1) (tag 2) 'c (tag 0) 'd)
    (variant #:tag 2 'c 'd))
 
   ;; (a + b + c) × (d + e)
   ;; ≅ a × d + b × d + c × d
   ;; + a × e + b × e + c × e
   (check-variant=
-   (distributivity #:shape #(3 2) 'a 'd)
+   (distributivity #:shape #(3 2) (tag 0) 'a (tag 0) 'd)
    (values 'a 'd))
   (check-variant=
-   (distributivity #:shape #(3 2) (tag 1) 'b 'd)
+   (distributivity #:shape #(3 2) (tag 1) 'b (tag 0) 'd)
    (variant #:tag 1 'b 'd))
   (check-variant=
-   (distributivity #:shape #(3 2) (tag 2) 'c 'd)
+   (distributivity #:shape #(3 2) (tag 2) 'c (tag 0) 'd)
    (variant #:tag 2 'c 'd))
   (check-variant=
-   (distributivity #:shape #(3 2) 'a (tag 1) 'e)
+   (distributivity #:shape #(3 2) (tag 0) 'a (tag 1) 'e)
    (variant #:tag 3 'a 'e))
   (check-variant=
    (distributivity #:shape #(3 2) (tag 1) 'b (tag 1) 'e)
@@ -236,16 +253,16 @@
   ;; + a × e + b × e + c × e
   ;; + a × f + b × f + c × f
   (check-variant=
-   (distributivity #:shape #(3 3) 'a 'd)
+   (distributivity #:shape #(3 3) (tag 0) 'a (tag 0) 'd)
    (values 'a 'd))
   (check-variant=
-   (distributivity #:shape #(3 3) (tag 1) 'b 'd)
+   (distributivity #:shape #(3 3) (tag 1) 'b (tag 0) 'd)
    (variant #:tag 1 'b 'd))
   (check-variant=
-   (distributivity #:shape #(3 3) (tag 2) 'c 'd)
+   (distributivity #:shape #(3 3) (tag 2) 'c (tag 0) 'd)
    (variant #:tag 2 'c 'd))
   (check-variant=
-   (distributivity #:shape #(3 3) 'a (tag 1) 'e)
+   (distributivity #:shape #(3 3) (tag 0) 'a (tag 1) 'e)
    (variant #:tag 3 'a 'e))
   (check-variant=
    (distributivity #:shape #(3 3) (tag 1) 'b (tag 1) 'e)
@@ -254,7 +271,7 @@
    (distributivity #:shape #(3 3) (tag 2) 'c (tag 1) 'e)
    (variant #:tag 5 'c 'e))
   (check-variant=
-   (distributivity #:shape #(3 3) 'a (tag 2) 'f)
+   (distributivity #:shape #(3 3) (tag 0) 'a (tag 2) 'f)
    (variant #:tag 6 'a 'f))
   (check-variant=
    (distributivity #:shape #(3 3) (tag 1) 'b (tag 2) 'f)
