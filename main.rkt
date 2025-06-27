@@ -23,8 +23,8 @@
   let*-variant
   define-variant)
 
-(define natural?
-  exact-nonnegative-integer?) ; convenient alias for readability
+(define natural? exact-nonnegative-integer?) ; convenient alias for readability
+(define (not-tag? v) (not (tag? v)))
 
 (struct tag (number)
   ;; Represents the tag attached to a variant.  The guard enforces that
@@ -92,7 +92,7 @@
   ;; Distribute nested sums over products according to `shape`.
   ;; `shape` is a vector of natural numbers describing the number of
   ;; options for each argument.  Each argument must begin with a `tag`
-  ;; structure (including @racket[(tag 0)]).  All values until the next
+  ;; structure (including `(tag 0)`).  All values until the next
   ;; tag belong to that argument.  The result is a single variant tagged
   ;; with the combined index.
   (define len (vector-length shape))
@@ -102,7 +102,7 @@
     (for/fold ([arg* arg*] [res* '()]
                #:result
                (begin
-                 (when (pair? arg*)
+                 (unless (null? arg*)
                    (raise-arity-error 'distributivity len))
                  (reverse res*)))
               ([size (in-vector shape)]
@@ -113,7 +113,7 @@
       (unless (< idx size)
         (raise-argument-error 'distributivity (format "tag < ~a" size) idx))
       (define-values (vals rest)
-        (splitf-at (cdr arg*) (λ (x) (not (tag? x)))))
+        (splitf-at (cdr arg*) not-tag?))
       (unless (pair? vals)
         (raise-arity-error 'distributivity len))
       (vector-set! idx* i idx)
