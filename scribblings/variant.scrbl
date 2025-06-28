@@ -118,7 +118,7 @@ simply yields @racket[f].
 ]
 }
 
-@defproc[(distributivity/column [#:shape shape vector?] [v any/c] ...+) any]{
+@defproc[(distributivity/column [#:shape shape vector?] [v any/c] ...) any]{
 Distributes nested sums over products according to @racket[shape].
 Each argument must start with a @racket[tag] (including @racket[(tag 0)])
 indicating which option was chosen. The resulting @tech{variant} is tagged
@@ -136,19 +136,19 @@ over addition.  As an illustration:
 }}
 
 @variant-examples[
-(distributivity/column #:shape #(3 3) (tag 0) 'a0 'a1 (tag 0) 'd0 'd1)
+(distributivity/column #:shape #(3 3) 'a0 'a1 (tag 0) 'd0 'd1)
 (distributivity/column #:shape #(3 3) (tag 1) 'b0 'b1 (tag 0) 'd0 'd1)
 (distributivity/column #:shape #(3 3) (tag 2) 'c0 'c1 (tag 0) 'd0 'd1)
-(distributivity/column #:shape #(3 3) (tag 0) 'a0 'a1 (tag 1) 'e0 'e1)
+(distributivity/column #:shape #(3 3) 'a0 'a1 (tag 1) 'e0 'e1)
 (distributivity/column #:shape #(3 3) (tag 1) 'b0 'b1 (tag 1) 'e0 'e1)
 (distributivity/column #:shape #(3 3) (tag 2) 'c0 'c1 (tag 1) 'e0 'e1)
-(distributivity/column #:shape #(3 3) (tag 0) 'a0 'a1 (tag 2) 'f0 'f1)
+(distributivity/column #:shape #(3 3) 'a0 'a1 (tag 2) 'f0 'f1)
 (distributivity/column #:shape #(3 3) (tag 1) 'b0 'b1 (tag 2) 'f0 'f1)
 (distributivity/column #:shape #(3 3) (tag 2) 'c0 'c1 (tag 2) 'f0 'f1)
 ]
 }
 
-@defproc[(distributivity/row [#:shape shape vector?] [v any/c] ...+) any]{
+@defproc[(distributivity/row [#:shape shape vector?] [v any/c] ...) any]{
 Similar to @racket[distributivity/column], but the resulting index is
 computed in row-major order.  As an illustration:
 
@@ -161,9 +161,9 @@ computed in row-major order.  As an illustration:
 }}
 
 @variant-examples[
- (distributivity/row #:shape #(3 3) (tag 0) 'a0 'a1 (tag 0) 'd0 'd1)
- (distributivity/row #:shape #(3 3) (tag 0) 'a0 'a1 (tag 1) 'e0 'e1)
- (distributivity/row #:shape #(3 3) (tag 0) 'a0 'a1 (tag 2) 'f0 'f1)
+ (distributivity/row #:shape #(3 3) 'a0 'a1 (tag 0) 'd0 'd1)
+ (distributivity/row #:shape #(3 3) 'a0 'a1 (tag 1) 'e0 'e1)
+ (distributivity/row #:shape #(3 3) 'a0 'a1 (tag 2) 'f0 'f1)
  (distributivity/row #:shape #(3 3) (tag 1) 'b0 'b1 (tag 0) 'd0 'd1)
  (distributivity/row #:shape #(3 3) (tag 1) 'b0 'b1 (tag 1) 'e0 'e1)
  (distributivity/row #:shape #(3 3) (tag 1) 'b0 'b1 (tag 2) 'f0 'f1)

@@ -6,6 +6,7 @@
 ;; used to distinguish between different variants at runtime.
 
 (require (for-syntax racket/base syntax/parse)
+         racket/case
          racket/contract/base)
 
 (provide
@@ -16,8 +17,8 @@
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
    [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
-   [distributivity/column (->* (#:shape vector? any/c) () #:rest (listof any/c) any)]
-   [distributivity/row (->* (#:shape vector? any/c) () #:rest (listof any/c) any)])
+   [distributivity/column (->* (#:shape vector?) () #:rest (listof any/c) any)]
+   [distributivity/row (->* (#:shape vector?) () #:rest (listof any/c) any)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -93,18 +94,21 @@
             ([f (in-list f*)])
     (compose2/variant acc f)))
 
-(define ((make-distributivity name get-range) #:shape shape arg . arg*)
+(define ((make-distributivity name get-range) #:shape shape . arg*)
   ;; Distribute nested sums over products according to `shape`.
   ;; `shape` is a vector of natural numbers describing the number of
   ;; options for each argument.  Each argument must begin with a `tag`
   ;; structure (including `(tag 0)`), followed by the values for that
   ;; argument.  The combined variant uses `enumerator` to compute its tag.
-  (unless (tag? arg) (raise-arity-error name len))
   (define len (vector-length shape))
   (define index (make-vector len))
   (define v*
     (for/fold ([i 0] [res* '()] #:result (reverse res*))
-              ([arg (in-list (cons arg arg*))])
+              ([arg (in-list
+                     (case/eqv (- len (for/sum ([arg (in-list arg*)] #:when (tag? arg)) 1))
+                       [(0) arg*]
+                       [(1) (cons (tag 0) arg*)]
+                       [else (raise-arity-error name len)]))])
       (cond
         [(tag? arg)
          (define size (vector-ref shape i))
@@ -113,7 +117,8 @@
            (raise-argument-error name (format "tag < ~a" size) idx))
          (vector-set! index i idx)
          (values (add1 i) res*)]
-        [else (values i (cons arg res*))])))
+        [else
+         (values i (cons arg res*))])))
   (define-values (start stop step) (get-range len))
   (define n
     (for/fold ([offset 0] [stride 1] #:result offset)

@@ -271,8 +271,6 @@
 
   ;; error cases for missing tags and arity issues
   (check-exn exn:fail:contract?
-             (λ () (distributivity/column #:shape #(1) 'a)))
-  (check-exn exn:fail:contract?
              (λ () (distributivity/column #:shape #(1) (tag 0) 'a (tag 0))))
   (check-exn exn:fail:contract?
             (λ () (distributivity/column #:shape #(1) (tag 2) 'a))))
@@ -464,8 +462,6 @@
    (variant #:tag 1 'a 'b 'c 1 2 3))
 
   ;; error cases for missing tags and arity issues
-  (check-exn exn:fail:contract?
-             (λ () (distributivity/row #:shape #(1) 'a)))
   (check-exn exn:fail:contract?
              (λ () (distributivity/row #:shape #(1) (tag 0) 'a (tag 0))))
   (check-exn exn:fail:contract?
