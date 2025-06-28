@@ -76,6 +76,9 @@
   (call-with-values generator receiver*))
 
 (define (compose2/variant g f)
+  ;; Compose two procedures while forwarding tags between them.  `g`
+  ;; is applied to the result of `f`, and `variant` acts as the
+  ;; identity element.
   (cond
     [(eq? f variant) g]
     [(eq? g variant) f]
@@ -85,6 +88,9 @@
      composed]))
 
 (define (compose/variant . f*)
+  ;; Compose zero or more procedures right-to-left using
+  ;; `compose2/variant`.  `variant` is the identity element for this
+  ;; composition.
   (for/fold ([acc variant])
             ([f (in-list f*)])
     (compose2/variant acc f)))
