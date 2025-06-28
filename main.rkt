@@ -17,8 +17,8 @@
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
    [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
-   [distributivity/column (->* (#:shape vector?) () #:rest (listof any/c) any)]
-   [distributivity/row (->* (#:shape vector?) () #:rest (listof any/c) any)])
+   [distributivity/right (->* (#:shape vector?) () #:rest (listof any/c) any)]
+   [distributivity/left (->* (#:shape vector?) () #:rest (listof any/c) any)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -128,14 +128,14 @@
               (* stride size))))
   (apply variant #:tag n v*))
 
-(define distributivity/column
+(define distributivity/right
   (make-distributivity
-   'distributivity/column
+   'distributivity/right
    (λ (len) (values 0 len 1))))
 
-(define distributivity/row
+(define distributivity/left
   (make-distributivity
-   'distributivity/row
+   'distributivity/left
    (λ (len) (values (sub1 len) -1 -1))))
 
 (begin-for-syntax
