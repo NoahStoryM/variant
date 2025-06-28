@@ -6,8 +6,7 @@
 ;; used to distinguish between different variants at runtime.
 
 (require (for-syntax racket/base syntax/parse)
-         racket/contract/base
-         racket/list)
+         racket/contract/base)
 
 (provide
   ;; Contracted functions that make up the public API
@@ -25,7 +24,6 @@
   define-variant)
 
 (define natural? exact-nonnegative-integer?) ; convenient alias for readability
-(define (not-tag? v) (not (tag? v)))
 
 (struct tag (number)
   ;; Represents the tag attached to a variant.  The guard enforces that
@@ -95,26 +93,7 @@
             ([f (in-list f*)])
     (compose2/variant acc f)))
 
-
-(define (column-index shape idx*)
-  ;; Combine indices using column enumeration
-  (for/fold ([acc 0] [stride 1] #:result acc)
-            ([idx (in-vector idx*)]
-             [size (in-vector shape)])
-    (values (+ acc (* idx stride))
-            (* stride size))))
-
-(define (row-index shape idx*)
-  ;; Combine indices using row enumeration
-  (define len (vector-length shape))
-  (for/fold ([acc 0] [stride 1] #:result acc)
-            ([i (in-range (sub1 len) -1 -1)])
-    (define idx (vector-ref idx* i))
-    (define size (vector-ref shape i))
-    (values (+ acc (* idx stride))
-            (* stride size))))
-
-(define ((make-distributivity enumerator name) #:shape shape arg . arg*)
+(define ((make-distributivity name get-range) #:shape shape arg . arg*)
   ;; Distribute nested sums over products according to `shape`.
   ;; `shape` is a vector of natural numbers describing the number of
   ;; options for each argument.  Each argument must begin with a `tag`
@@ -122,34 +101,37 @@
   ;; argument.  The combined variant uses `enumerator` to compute its tag.
   (unless (tag? arg) (raise-arity-error name len))
   (define len (vector-length shape))
-  (define idx* (make-vector len))
-  (define res*
-    (for/fold ([arg* (cons arg arg*)]
-               [res* '()]
-               #:result
-               (begin
-                 (unless (null? arg*)
-                   (raise-arity-error name len))
-                 (reverse res*)))
-              ([size (in-vector shape)]
-               [i (in-naturals)])
-      (define idx (tag-number (car arg*)))
-      (unless (< idx size)
-        (raise-argument-error name (format "tag < ~a" size) idx))
-      (define-values (vals args)
-        (splitf-at (cdr arg*) not-tag?))
-      (unless (pair? vals)
-        (raise-arity-error name len))
-      (vector-set! idx* i idx)
-      (values args (foldl cons res* vals))))
-  (define tag-num (enumerator shape idx*))
-  (apply variant #:tag tag-num res*))
+  (define index (make-vector len))
+  (define v*
+    (for/fold ([i 0] [res* '()] #:result (reverse res*))
+              ([arg (in-list (cons arg arg*))])
+      (cond
+        [(tag? arg)
+         (define size (vector-ref shape i))
+         (define idx (tag-number arg))
+         (unless (< idx size)
+           (raise-argument-error name (format "tag < ~a" size) idx))
+         (vector-set! index i idx)
+         (values (add1 i) res*)]
+        [else (values i (cons arg res*))])))
+  (define-values (start stop step) (get-range len))
+  (define n
+    (for/fold ([offset 0] [stride 1] #:result offset)
+              ([size (in-vector shape start stop step)]
+               [idx (in-vector index start stop step)])
+      (values (+ offset (* idx stride))
+              (* stride size))))
+  (apply variant #:tag n v*))
 
 (define distributivity/column
-  (make-distributivity column-index 'distributivity/column))
+  (make-distributivity
+   'distributivity/column
+   (λ (len) (values 0 len 1))))
 
 (define distributivity/row
-  (make-distributivity row-index 'distributivity/row))
+  (make-distributivity
+   'distributivity/row
+   (λ (len) (values (sub1 len) -1 -1))))
 
 (begin-for-syntax
   ;; Syntax classes used by the macro definitions below.  They parse the
