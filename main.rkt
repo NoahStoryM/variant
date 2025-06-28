@@ -17,8 +17,8 @@
    [apply/variant (->* (procedure?) (#:tag natural?) #:rest (listof any/c) any)]
    [call-with-variant (-> procedure? procedure? any)]
    [compose/variant (->* () () #:rest (listof procedure?) procedure?)]
-   [distributivity/column (->* (#:shape vector?) () #:rest (listof any/c) any)]
-   [distributivity/row (->* (#:shape vector?) () #:rest (listof any/c) any)])
+   [distributivity/column (->* (#:shape vector? any/c) () #:rest (listof any/c) any)]
+   [distributivity/row (->* (#:shape vector? any/c) () #:rest (listof any/c) any)])
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
@@ -114,16 +114,18 @@
     (values (+ acc (* idx stride))
             (* stride size))))
 
-(define ((make-distributivity enumerator name) #:shape shape . arg*)
+(define ((make-distributivity enumerator name) #:shape shape arg . arg*)
   ;; Distribute nested sums over products according to `shape`.
   ;; `shape` is a vector of natural numbers describing the number of
   ;; options for each argument.  Each argument must begin with a `tag`
   ;; structure (including `(tag 0)`), followed by the values for that
   ;; argument.  The combined variant uses `enumerator` to compute its tag.
+  (unless (tag? arg) (raise-arity-error name len))
   (define len (vector-length shape))
   (define idx* (make-vector len))
   (define res*
-    (for/fold ([arg* arg*] [res* '()]
+    (for/fold ([arg* (cons arg arg*)]
+               [res* '()]
                #:result
                (begin
                  (unless (null? arg*)
@@ -131,8 +133,6 @@
                  (reverse res*)))
               ([size (in-vector shape)]
                [i (in-naturals)])
-      (unless (and (pair? arg*) (tag? (car arg*)))
-        (raise-arity-error name len))
       (define idx (tag-number (car arg*)))
       (unless (< idx size)
         (raise-argument-error name (format "tag < ~a" size) idx))

@@ -118,7 +118,7 @@ simply yields @racket[f].
 ]
 }
 
-@defproc[(distributivity/column [#:shape shape vector?] [v any/c] ...) any]{
+@defproc[(distributivity/column [#:shape shape vector?] [v any/c] ...+) any]{
 Distributes nested sums over products according to @racket[shape].
 Each argument must start with a @racket[tag] (including @racket[(tag 0)])
 indicating which option was chosen. The resulting @tech{variant} is tagged
@@ -148,7 +148,7 @@ over addition.  As an illustration:
 ]
 }
 
-@defproc[(distributivity/row [#:shape shape vector?] [v any/c] ...) any]{
+@defproc[(distributivity/row [#:shape shape vector?] [v any/c] ...+) any]{
 Similar to @racket[distributivity/column], but the resulting index is
 computed in row-major order.  As an illustration:
 
