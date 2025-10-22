@@ -17,8 +17,8 @@ jobs:
           distribution: full
           version: stable
 
-      - name: Install dependencies
-        run: raco pkg install --auto --batch
+      - name: Install
+        run: raco pkg install --auto
 
       - name: Run tests
         run: raco test -p variant
