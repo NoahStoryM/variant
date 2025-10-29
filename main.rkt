@@ -5,7 +5,9 @@
 ;; built-in multiple values, but optionally carries a tag that can be
 ;; used to distinguish between different variants at runtime.
 
-(require (for-syntax racket/base syntax/parse)
+(require (for-syntax racket/base
+                     racket/syntax
+                     syntax/parse)
          racket/case
          racket/contract/base)
 
@@ -22,6 +24,7 @@
   ;; Export the tag structure type and the helper macros
   (struct-out tag)
   let*-variant
+  let-variant
   define-variant)
 
 (define natural? exact-nonnegative-integer?) ; convenient alias for readability
@@ -139,19 +142,38 @@
    (λ (len) (values (sub1 len) -1 -1))))
 
 (begin-for-syntax
+  (define (new-id id) (datum->syntax #f (syntax-e id)))
+  (define (map* f v*)
+    (if (pair? v*)
+        (cons (f (car v*)) (map* f (cdr v*)))
+        (f v*)))
+
   ;; Syntax classes used by the macro definitions below.  They parse the
   ;; keyword-formal lists that allow optional `#:tag` arguments.
   (define-splicing-syntax-class arg
-    [pattern id:id #:with stx-id #'id]
-    [pattern [id:id default-expr] #:with stx-id #'id]
-    [pattern (~seq #:tag id:id) #:with stx-id #'id]
-    [pattern (~seq #:tag [id:id default-expr]) #:with stx-id #'id])
+    [pattern id:id
+             #:with stx-id #'id]
+    [pattern [id:id default-expr]
+             #:with stx-id #'id]
+    [pattern (~seq #:tag id:id)
+             #:with stx-id #'id]
+    [pattern (~seq #:tag [id:id default-expr])
+             #:with stx-id #'id])
   (define-syntax-class kw-formals
     ;; Collects the identifiers from a formal list so that the macros can
     ;; produce the corresponding variable bindings.
-    [pattern rest-id:id #:with stx-id* #'(rest-id)]
-    [pattern (arg:arg ...+ . rest-id:id) #:with stx-id* #'(arg.stx-id ... rest-id)]
-    [pattern (arg:arg ...) #:with stx-id* #'(arg.stx-id ...)]))
+    [pattern rest-id:id
+             #:with temp (new-id #'rest-id)
+             #:with stx-id* #'(rest-id)
+             #:with temp-stx-id* (list (syntax-e #'rest-id))]
+    [pattern (arg:arg ...+ . rest-id:id)
+             #:with temp (map* new-id (syntax-e #'(arg.stx-id ... . rest-id)))
+             #:with stx-id* #'(arg.stx-id ... rest-id)
+             #:with temp-stx-id* (map new-id (syntax->list #'(arg.stx-id ... rest-id)))]
+    [pattern (arg:arg ...)
+             #:with temp (map new-id (syntax->list #'(arg.stx-id ...)))
+             #:with stx-id* #'(arg.stx-id ...)
+             #:with temp-stx-id* (map new-id (syntax->list #'(arg.stx-id ...)))]))
 
 
 (define-syntax let*-variant
@@ -170,12 +192,28 @@
          (let*-variant ([formals* expr*] ...)
            body ...))]))
 
+(define-syntax let-variant
+  ;; A `let-values` analogue that works with variants.  Each bound
+  ;; expression may produce tagged or untagged values and the
+  ;; corresponding formals can include an optional `#:tag` binding.
+  (syntax-parser
+    [(_ () body ...+)
+     #'(let () body ...)]
+    [(_ ([formals:kw-formals expr]) body ...+)
+     #'(call-with-variant
+        (λ () expr)
+        (λ formals body ...))]
+    [(_ ([formals*:kw-formals expr*] ... [formals:kw-formals expr]) body ...+)
+     #'(let*-variant ([formals*.temp expr*] ... [formals expr])
+         (let-values ([formals*.stx-id* (values . formals*.temp-stx-id*)] ...)
+           body ...))]))
+
 (define-syntax define-variant
   ;; Helper for defining variant-aware bindings.  Expands to
-  ;; `let*-variant` wrapped in `define-values` so that the identifiers in
+  ;; `let-variant` wrapped in `define-values` so that the identifiers in
   ;; `formals` become top-level definitions.
   (syntax-parser
     [(_ formals:kw-formals expr)
      #'(define-values formals.stx-id*
-         (let*-variant ([formals expr])
+         (let-variant ([formals expr])
            (values . formals.stx-id*)))]))

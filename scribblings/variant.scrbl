@@ -173,6 +173,42 @@ computed in row-major order.  As an illustration:
 ]
 }
 
+@defform[(let-variant ([kw-formals rhs-expr] ...) body ...+)
+         #:grammar
+         [(kw-formals (arg ...)
+                      (arg ...+ . rest-id)
+                      rest-id)
+          (arg id
+               [id default-expr]
+               (code:line #:tag id)
+               (code:line #:tag [id default-expr]))]]{
+A @tech{variant}-aware version of @racket[let-values]. Works with @tech{variants}.
+
+@variant-examples[
+(let-variant ([v* (variant 1 2 3)]) v*)
+(let-variant ([(v . v*) (variant 1 2 3)]) (cons v* v))
+(let-variant ([(v . v*) (variant 1 2 3 #:tag 0)]) (cons v* v))
+(let-values ([(a y) (values 1 2)])
+  (let-variant ([(y) a] [(x) y])
+    x))
+(eval:error (let-variant ([(v . v*) (variant 1 2 3 #:tag 1)]) (cons v* v)))
+(let-variant ([(#:tag n v . v*)
+               (variant 1 2 3 #:tag 1)])
+  (cons (cons v* v) n))
+(let-variant ([(#:tag [n 0] v . v*)
+               (variant 1 2 3)])
+  (cons (cons v* v) n))
+(eval:error
+ (let-variant ([(#:tag n v . v*)
+                (variant 1 2 3)])
+   (cons (cons v* v) n)))
+(eval:error
+ (let-variant ([(#:tag n v . v*)
+                (variant 1 2 3 #:tag 0)])
+   (cons (cons v* v) n)))
+]
+}
+
 @defform[(let*-variant ([kw-formals rhs-expr] ...) body ...+)
          #:grammar
          [(kw-formals (arg ...)
@@ -188,6 +224,9 @@ A @tech{variant}-aware version of @racket[let*-values]. Works with @tech{variant
 (let*-variant ([v* (variant 1 2 3)]) v*)
 (let*-variant ([(v . v*) (variant 1 2 3)]) (cons v* v))
 (let*-variant ([(v . v*) (variant 1 2 3 #:tag 0)]) (cons v* v))
+(let-values ([(a y) (values 1 2)])
+  (let*-variant ([(y) a] [(x) y])
+    x))
 (eval:error (let*-variant ([(v . v*) (variant 1 2 3 #:tag 1)]) (cons v* v)))
 (let*-variant ([(#:tag n v . v*)
                 (variant 1 2 3 #:tag 1)])
