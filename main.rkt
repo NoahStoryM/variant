@@ -8,6 +8,7 @@
 (require (for-syntax racket/base
                      racket/syntax
                      syntax/parse)
+         "tag.rkt"
          racket/case
          racket/contract/base)
 
@@ -29,16 +30,6 @@
 
 (define natural? exact-nonnegative-integer?) ; convenient alias for readability
 
-(struct tag (number)
-  ;; Represents the tag attached to a variant.  The guard enforces that
-  ;; the tag number is a natural number at construction time.
-  #:extra-constructor-name make-tag
-  #:transparent
-  #:guard
-  (λ (n name)
-    (unless (natural? n)
-      (raise-argument-error name "natural?" n))
-    n))
 
 (define (variant #:tag [n 0] . v*)
   ;; Construct a tagged collection of values.  When the tag is zero
