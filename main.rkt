@@ -5,9 +5,7 @@
 ;; built-in multiple values, but optionally carries a tag that can be
 ;; used to distinguish between different variants at runtime.
 
-(require (for-syntax racket/base
-                     racket/syntax
-                     syntax/parse)
+(require (for-syntax racket/base syntax/parse)
          "tag.rkt"
          racket/case
          racket/contract/base)
