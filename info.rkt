@@ -6,7 +6,8 @@
 
 (define pkg-desc "Tagged Values")
 
-(define deps '("base"))
+(define deps '("typed-racket-lib"
+               "base"))
 (define build-deps '("scribble-lib" "rackunit-lib" "racket-doc"))
 
 (define scribblings '(("scribblings/variant.scrbl")))
